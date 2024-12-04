@@ -7,11 +7,13 @@ export type Config = {
   client: {
     id: string,
     secret: string,
-    callback_url: string
+    callback_url: string,
+    scopes: string[]
   },
   port: number,
   api_base: "https://api.twitch.tv/helix",
   eventsub_url: "https://api.twitch.tv/helix/eventsub/subscriptions",
+  eventsub_callback: string,
   secret_key: string,
   channel: {
     name: string,
@@ -24,11 +26,18 @@ export const globalData: Data = {
     client: {
       id: "client_id",
       secret: "client_secret",
-      callback_url: `http://localhost:8000/callback`
+      callback_url: `http://localhost:8000/callback`,
+      scopes: [
+        "channel:read:redemptions",
+        "channel:manage:redemptions",
+        "channel:moderate",
+        "channel:read:subscriptions"
+      ]
     },
     port: 8000,
     api_base: "https://api.twitch.tv/helix",
     eventsub_url: "https://api.twitch.tv/helix/eventsub/subscriptions",
+    eventsub_callback: "http://localhost:8000/eventsub",
     secret_key: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     channel: {
       name: "channel_name",

@@ -5,6 +5,7 @@ export type SubscriptionType =  |
   "automod.settings.update" |
   "automod.terms.update" |
   "channel.update" |
+  "channel.follow" |
   "channel.ad_break.begin" |
   "channel.chat.clear" |
   "channel.chat.clear_user_messages" |
