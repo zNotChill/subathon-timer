@@ -1,4 +1,4 @@
-import { SubathonData } from "./Subathon.ts";
+import { Event, SubathonData } from "./Subathon.ts";
 
 export type Data = {
   config: Config,
@@ -75,12 +75,20 @@ export const globalData: Data = {
       {
         duration: 4,
         type: "donation",
-        value: 1
+        value: 1,
+        adaptive: true
       },
       {
         duration: 4,
         type: "channel.cheer",
-        value: 100
+        value: 100,
+        adaptive: true
+      },
+      {
+        duration: 8,
+        type: "channel.cheer",
+        value: 200,
+        adaptive: true
       },
       {
         duration: 15,
@@ -98,7 +106,8 @@ export const globalData: Data = {
         value: 3
       },
     ],
-    currency: "EUR"
+    currency: "EUR",
+    history: [],
   }
 }
 
@@ -110,12 +119,22 @@ export class DataManager {
   static getAppData(): AppData {
     return globalData.app;
   }
+
+  static getSubathonConfig(): SubathonData {
+    return globalData.subathon_config;
+  }
+
+  static setSubathonHistory(history: Event[]) {
+    globalData.subathon_config.history = history;
+    return globalData;
+  }
   
   static getData(): Data {
     return globalData;
   }
 
   static loadData() {
+    this.createFiles();
     // Load data/config.json
     const configData = Deno.readFileSync("data/config.json");
     const configText = new TextDecoder().decode(configData);
@@ -130,6 +149,13 @@ export class DataManager {
 
     globalData.app = app;
 
+    // Load data/subathon.json
+    const subathonData = Deno.readFileSync("data/subathon.json");
+    const subathonText = new TextDecoder().decode(subathonData);
+    const subathon: SubathonData = JSON.parse(subathonText);
+
+    globalData.subathon_config = subathon;
+
     this.formatAllValues();
     return globalData;
   }
@@ -143,15 +169,24 @@ export class DataManager {
     Deno.mkdirSync("data", { recursive: true });
 
     // Create config.json if it doesn't exist
-    const configExists = Deno.statSync("data/config.json").size > 0;
-    if (!configExists) {
-      Deno.writeFileSync("data/config.json", new TextEncoder().encode(JSON.stringify(globalData.config, null, 2)));
+    try {
+      Deno.readFileSync("data/config.json");
+    } catch {
+      Deno.writeFileSync("data/config.json", new TextEncoder().encode(""));
     }
 
     // Create data.json if it doesn't exist
-    const appdataExists = Deno.statSync("data/data.json").size > 0;
-    if (!appdataExists) {
-      Deno.writeFileSync("data/data.json", new TextEncoder().encode(JSON.stringify(globalData.app, null, 2)));
+    try {
+      Deno.readFileSync("data/data.json");
+    } catch {
+      Deno.writeFileSync("data/data.json", new TextEncoder().encode(""));
+    }
+
+    // Create subathon.json if it doesn't exist
+    try {
+      Deno.readFileSync("data/subathon.json");
+    } catch {
+      Deno.writeFileSync("data/subathon.json", new TextEncoder().encode(""));
     }
 
     return globalData;
@@ -160,6 +195,7 @@ export class DataManager {
   static saveData() {
     Deno.writeFileSync("data/config.json", new TextEncoder().encode(JSON.stringify(globalData.config, null, 2)));
     Deno.writeFileSync("data/data.json", new TextEncoder().encode(JSON.stringify(globalData.app, null, 2)));
+    Deno.writeFileSync("data/subathon.json", new TextEncoder().encode(JSON.stringify(globalData.subathon_config, null, 2)));
 
     return globalData;
   }

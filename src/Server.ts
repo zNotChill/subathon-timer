@@ -1,9 +1,8 @@
 
 
-import { DataManager } from "./Data.ts";
 import { Log } from "./Logger.ts";
+import { dataManager, twitchManager } from "./Manager.ts";
 import { NgrokManager } from "./Ngrok.ts";
-import { twitchManager } from "./Twitch.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
 
@@ -12,8 +11,7 @@ const app = new Application;
 const router = new Router();
 export const server = app;
 
-DataManager.loadData();
-const config = DataManager.getConfig();
+const config = dataManager.getConfig();
 
 const ngrokManager = new NgrokManager();
 let https = "";
@@ -60,12 +58,13 @@ router.get("/twitch/callback", async (ctx) => {
 
   Log(`User ${codeUser.login} has successfully logged in. Client ID now has requested permissions.`, "Server");
 
+  twitchManager.user_logged_in = true;
   await twitchManager.connectWebSocket();
   ctx.response.body = "OK";
 });
 
 router.post("/eventsub", async (ctx) => {
-  if(!twitchManager.logged_in) return;
+  if(!twitchManager.user_logged_in) return;
   const body = await ctx.request.body.json();
   const signature = ctx.request.headers.get("Twitch-Eventsub-Message-Signature") || "";
   const isValid = twitchManager.validateMessage(signature, config.secret_key);

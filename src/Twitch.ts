@@ -1,7 +1,8 @@
-import { Config, DataManager } from "./Data.ts";
+import { Config } from "./Data.ts";
 import { User } from "./types/User.ts";
 import { Log, Error } from "./Logger.ts";
 import { SubscriptionType } from "./types/EventSub.ts";
+import { SubathonManager } from "./Subathon.ts";
 
 export class TwitchManager {
   access_token: string;
@@ -12,8 +13,11 @@ export class TwitchManager {
   ws: WebSocket | null;
 
   logged_in: boolean;
+  user_logged_in: boolean;
 
-  constructor(config: Config) {
+  subathonManager: SubathonManager;
+
+  constructor(config: Config, subathonManager: SubathonManager) {
     this.config = config;
 
     this.access_token = "";
@@ -37,6 +41,9 @@ export class TwitchManager {
     };
 
     this.logged_in = false;
+    this.user_logged_in = false;
+
+    this.subathonManager = subathonManager;
   }
 
   async getAccessToken() {
@@ -139,7 +146,7 @@ export class TwitchManager {
         break;
       }
       case "notification": {
-        console.log(event);
+        this.subathonManager.getRewardFromTwitchEvent(event, eventType);
 
         // switch (eventType as SubscriptionType) {
         //   case "channel.follow": {
@@ -247,7 +254,3 @@ export class TwitchManager {
     this.logged_in = true;
   }
 }
-
-DataManager.loadData();
-
-export const twitchManager = new TwitchManager(DataManager.getConfig());

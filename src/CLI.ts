@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { twitchManager } from "./Twitch.ts";
+import { twitchManager } from "./Manager.ts";
 import { server } from "./Server.ts";
 import { DataManager } from "./Data.ts";
 import { Log } from "./Logger.ts";
@@ -40,7 +40,6 @@ const run = new cliffy.Command()
 const runSetup = async () => {
   Log("Running setup...", "Setup");
 
-  DataManager.createFiles();
   appdata = DataManager.getAppData();
 
   Log("Setup complete.", "Setup");
