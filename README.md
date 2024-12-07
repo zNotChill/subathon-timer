@@ -1,4 +1,4 @@
-# subathon-timer
+# apricot
 
 # TODO
 - set up eventsub

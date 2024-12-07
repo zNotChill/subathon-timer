@@ -1,6 +1,5 @@
 import { Config, DataManager } from "./Data.ts";
 import { User } from "./types/User.ts";
-import { server } from "./Server.ts";
 import { Log, Error } from "./Logger.ts";
 import { SubscriptionType } from "./types/EventSub.ts";
 
@@ -11,6 +10,8 @@ export class TwitchManager {
   user: User;
   code_user: User;
   ws: WebSocket | null;
+
+  logged_in: boolean;
 
   constructor(config: Config) {
     this.config = config;
@@ -34,6 +35,8 @@ export class TwitchManager {
       user_id: "",
       expires_in: 0
     };
+
+    this.logged_in = false;
   }
 
   async getAccessToken() {
@@ -88,28 +91,8 @@ export class TwitchManager {
 
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      const type = message.metadata.message_type;
 
-      switch (type) {
-        case "session_welcome": {
-          Log(`Received session_welcome message. Subscribing to all events.`, "TwitchManager");
-          this.subscribeToEvent(message.payload.session.id, "channel.follow");
-          break;
-        }
-        case "notification": {
-          const event = message.payload.event;
-          switch (message.payload.subscription.type) {
-            case "channel.follow": {
-              Log(`Received follow notification from ${event.user_login}.`, "TwitchManager");
-              break;
-            }
-          }
-          break;
-        }
-        default:
-          Log(`Received message of type ${type}. Message: ${message}`, "TwitchManager");
-          break;
-      }
+      this.triggerMessage(message);
     };
 
     this.ws.onclose = () => {
@@ -121,19 +104,88 @@ export class TwitchManager {
     };
   }
 
+  // TODO: make this not type any
+  // deno-lint-ignore no-explicit-any
+  triggerMessage(message: any, from_websocket: boolean = true) {
+    let event, eventType, sessionId, type;
+
+    if (from_websocket) {
+      event = message.payload.event;
+      type = message.metadata.message_type;
+
+      if (message.payload.subscription) {
+        eventType = message.payload.subscription.type;
+      }
+
+      if (message.payload.session) {
+        sessionId = message.payload.session.id;
+      }
+
+    } else {
+      event = message.event;
+      type = "notification"; // TODO: check if this impacts anything
+      sessionId = message.subscription.id;
+      eventType = message.subscription.type;
+    }
+
+    switch (type) {
+      case "session_welcome": {
+        Log(`Received session_welcome message. Subscribing to all events.`, "TwitchManager");
+        
+        this.subscribeToEvent(sessionId, "channel.cheer");
+        this.subscribeToEvent(sessionId, "channel.follow");
+        this.subscribeToEvent(sessionId, "channel.subscribe");
+        
+        break;
+      }
+      case "notification": {
+        console.log(event);
+
+        // switch (eventType as SubscriptionType) {
+        //   case "channel.follow": {
+        //     Log(`Received follow notification from ${event.user_login}.`, "TwitchManager");
+        //     break;
+        //   }
+        //   case "channel.cheer": {
+        //     Log(`Received bit donation from ${event.user_login}. Cheered ${event.bits} bits!`, "TwitchManager");
+        //     break;
+        //   }
+        // }
+        break;
+      }
+      default:
+        // Log(`Received message of type ${type}. Message: ${message}`, "TwitchManager");
+        break;
+    }
+  }
+
   async subscribeToEvent(sessionId: string, type: SubscriptionType = "channel.chat.message") {
-    Log(`Attempting to subscribe to eventsub of type ${type}.`, "TwitchManager");
+    // Log(`Attempting to subscribe to eventsub of type ${type}.`, "TwitchManager");
 
     let version = "1";
     let condition = {};
 
-    switch (type) {
+    switch (type as SubscriptionType) {
       case "channel.follow": {
         version = "2";
         condition = {
           broadcaster_user_id: this.config.channel.id,
           moderator_user_id: this.code_user.user_id
         };
+        break;
+      }
+      case "channel.cheer": {
+        version = "1";
+        condition = {
+          broadcaster_user_id: this.config.channel.id
+        }
+        break;
+      }
+      case "channel.subscribe": {
+        version = "1";
+        condition = {
+          broadcaster_user_id: this.config.channel.id
+        }
       }
     }
 
@@ -178,7 +230,7 @@ export class TwitchManager {
       Error("validateToken: Invalid token", "TwitchManager");
       return "Invalid token";
     }
-    
+
     return data;
   }
 
@@ -192,11 +244,10 @@ export class TwitchManager {
     await this.getAccessToken();
     await this.validateToken(this.access_token);
 
-    server;
+    this.logged_in = true;
   }
 }
 
 DataManager.loadData();
 
 export const twitchManager = new TwitchManager(DataManager.getConfig());
-twitchManager.main();

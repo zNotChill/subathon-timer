@@ -75,4 +75,20 @@ export type SubscriptionType =  |
   "user.authorization.grant" |
   "user.authorization.revoke" |
   "user.update" |
-  "user.whisper.message"
+  "user.whisper.message";
+
+export type MessageEvent = {
+  user_id: string,
+  user_login: string,
+  user_name: string,
+  broadcaster_user_id: string,
+  broadcaster_user_login: string,
+  broadcaster_user_name: string,
+  is_anonymous: boolean;
+  message?: string,
+  bits?: number,
+  followed_at?: string,
+  tier?: string,
+  is_gift?: boolean,
+}
+
