@@ -10,7 +10,16 @@ import { MessageEvent } from "./types/EventSub.ts";
 // subathon without weird/incorrect gaps
 // in the data.
 
-export type EventType = SubscriptionType | "config_change" | "donation";
+export type EventType = SubscriptionType | 
+  "config_change" |
+  "donation" |
+  "money_added" |
+  "money_removed" |
+  "time_added" |
+  "time_removed" |
+  "time_reset" |
+  "time_paused" |
+  "time_unpaused";
 
 export type Rate = {
   value: number,
@@ -51,6 +60,9 @@ export class SubathonManager {
   timer: number;
   donations: number;
   donation_goal: number;
+  
+  timer_paused: boolean;
+  timer_paused_at: number;
 
   constructor(data: SubathonData) {
     this.data = data;
@@ -60,6 +72,9 @@ export class SubathonManager {
     this.timer = 0;
     this.donations = 0;
     this.donation_goal = 0;
+
+    this.timer_paused = false;
+    this.timer_paused_at = 0;
   }
 
   addEvent(event: Event) {
@@ -204,5 +219,40 @@ export class SubathonManager {
     }
     Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
     Log(`Donations are now at ${this.donations} ${this.data.currency}.`, "SubathonManager");
+  }
+
+  pauseTimer() {
+    this.timer_paused = true;
+    this.timer_paused_at = Date.now();
+
+    this.addEvent({
+      type: "time_paused",
+      value: 0,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: 0,
+      donation: 0,
+      multiplier: 1,
+    });
+
+    Log(`Timer has been paused at ${this.timer}.`, "SubathonManager");
+  }
+
+  unpauseTimer() {
+    this.timer_paused = false;
+
+    const time_paused = Date.now() - this.timer_paused_at;
+
+    this.addEvent({
+      type: "time_unpaused",
+      value: 0,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: time_paused,
+      donation: 0,
+      multiplier: 1,
+    });
+
+    Log(`Timer has been unpaused.`, "SubathonManager");
   }
 }

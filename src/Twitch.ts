@@ -82,7 +82,6 @@ export class TwitchManager {
     });
 
     const data = await response.json();
-    this.code_access_token = data.access_token;
 
     return data;
   }
@@ -234,7 +233,7 @@ export class TwitchManager {
     const data = await response.json();
 
     if (data.status === 401) {
-      Error("validateToken: Invalid token", "TwitchManager");
+      // Error("validateToken: Invalid token", "TwitchManager");
       return "Invalid token";
     }
 

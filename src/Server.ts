@@ -1,10 +1,12 @@
 
 
+import { Context } from "jsr:@oak/oak/context";
 import { Log } from "./Logger.ts";
 import { dataManager, twitchManager } from "./Manager.ts";
 import { NgrokManager } from "./Ngrok.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
+import { Next } from "jsr:@oak/oak/middleware";
 
 const app = new Application;
 
@@ -16,15 +18,35 @@ const config = dataManager.getConfig();
 const ngrokManager = new NgrokManager();
 let https = "";
 
+// authed middleware
+const authMiddleware = async (ctx: Context, next: Next) => {
+  const cookies = ctx.cookies;
+  const access_token = await cookies.get("access_token");
+
+  if (access_token !== twitchManager.code_access_token && twitchManager.user_logged_in) {
+    ctx.response.status = 401;
+    ctx.response.body = "Unauthorized";
+    return;
+  }
+
+  return next();
+};
+
 router.get("/twitch/login", (ctx) => {
   const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${config.client.id}&redirect_uri=${config.client.callback_url}&response_type=code&scope=${config.client.scopes.join("%20")}`;
   ctx.response.redirect(redirectUrl);
 });
 
-router.get("/twitch/callback", async (ctx) => {
+router.get("/twitch/callback", authMiddleware, async (ctx) => {
   const params = ctx.request.url.searchParams;
   const code = params.get("code");
   const error = params.get("error");
+
+  if (twitchManager.user_logged_in) {
+    ctx.response.status = 400;
+    ctx.response.body = "User already logged in";
+    return;
+  }
 
   if (error === "redirect_mismatch") {
     Log(`Redirect URI mismatch. Make sure to update your Twitch application's redirect URI to: ${https}/twitch/callback`, "Server");
@@ -54,12 +76,21 @@ router.get("/twitch/callback", async (ctx) => {
     return;
   }
 
+  if (!codeToken.access_token) {
+    ctx.response.status = 401;
+    ctx.response.body = "Unauthorized";
+    return;
+  }
+
+  twitchManager.code_access_token = codeToken.access_token;
   twitchManager.code_user = codeUser;
+  twitchManager.user_logged_in = true;
+  await twitchManager.connectWebSocket();
 
   Log(`User ${codeUser.login} has successfully logged in. Client ID now has requested permissions.`, "Server");
 
-  twitchManager.user_logged_in = true;
-  await twitchManager.connectWebSocket();
+  ctx.cookies.set("logged_in", "true");
+  ctx.cookies.set("access_token", codeToken.access_token);
   ctx.response.body = "OK";
 });
 

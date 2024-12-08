@@ -92,3 +92,7 @@ export type MessageEvent = {
   is_gift?: boolean,
 }
 
+export type DescribedSubscriptionType = {
+  type: SubscriptionType,
+  description: string,
+}
