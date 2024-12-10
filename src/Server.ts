@@ -7,6 +7,7 @@ import { NgrokManager } from "./Ngrok.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
 import { Next } from "jsr:@oak/oak/middleware";
+import ejs from "npm:ejs";
 
 const app = new Application;
 
@@ -109,6 +110,45 @@ router.post("/eventsub", async (ctx) => {
   // console.log(body);
   twitchManager.triggerMessage(body, false)
   ctx.response.body = "OK";
+});
+
+/*
+  Frontend System
+*/
+
+function getPageCSS(files: string[]) {
+  const cssDir = `${import.meta.dirname}\\frontend\\css`;
+  const cssFiles = files.map((file) => {
+    return Deno.readTextFileSync(`${cssDir}\\${file}`);
+  });
+
+  return cssFiles.join("\n");
+}
+
+function getPageJS(files: string[]) {
+  const jsDir = `${import.meta.dirname}\\frontend\\js`;
+  
+  const jsFiles = files.map((file) => {
+    return Deno.readTextFileSync(`${jsDir}\\${file}`);
+  });
+
+  return jsFiles.join("\n");
+}
+
+router.get("/settings", authMiddleware, async (ctx) => {
+  const cookies = ctx.cookies;
+  const access_token = await cookies.get("access_token");
+
+  const data = {
+    user: twitchManager.code_user,
+    data: dataManager.removeSensitiveValues(dataManager.getData()),
+    css: getPageCSS(["Main.css"]),
+    js: getPageJS(["Core.js", "Settings.js"]),
+    access_token: access_token
+  };
+
+  const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\settings.ejs`, data);
+  ctx.response.body = html;
 });
 
 app.use(router.routes());

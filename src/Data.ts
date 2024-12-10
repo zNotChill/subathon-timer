@@ -33,7 +33,9 @@ export type Config = {
 
 export type AppData = {
   first_run: boolean,
-  ngrok_url: string
+  ngrok_url: string,
+  access_token: string,
+  refresh_token: string,
 }
 
 export const globalData: Data = {
@@ -69,6 +71,8 @@ export const globalData: Data = {
   app: {
     first_run: true,
     ngrok_url: "",
+    access_token: "",
+    refresh_token: ""
   },
   subathon_config: {
     rates: [
@@ -220,5 +224,16 @@ export class DataManager {
     Deno.writeFileSync(`data/backups/${backupName}.json`, new TextEncoder().encode(JSON.stringify(data, null, 2)));
 
     return backupName;
+  }
+
+  static removeSensitiveValues(data: Data) {
+    const newData = data;
+
+    newData.app.access_token = "";
+    newData.app.refresh_token = "";
+    newData.config.secret_key = "";
+    newData.config.client.secret = "";
+
+    return newData;
   }
 }

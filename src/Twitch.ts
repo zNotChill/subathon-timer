@@ -6,7 +6,9 @@ import { SubathonManager } from "./Subathon.ts";
 
 export class TwitchManager {
   access_token: string;
+  refresh_token: string;
   code_access_token: string;
+  code_refresh_token: string;
   config: Config;
   user: User;
   code_user: User;
@@ -21,7 +23,9 @@ export class TwitchManager {
     this.config = config;
 
     this.access_token = "";
+    this.refresh_token = "";
     this.code_access_token = "";
+    this.code_refresh_token = "";
     this.ws = null;
 
     this.user = {
@@ -62,6 +66,7 @@ export class TwitchManager {
 
     const data = await response.json();
     this.access_token = data.access_token;
+    this.refresh_token = data.refresh_token;
 
     return data;
   }
@@ -83,6 +88,22 @@ export class TwitchManager {
 
     const data = await response.json();
 
+    return data;
+  }
+
+  async refreshToken(refresh_token: string) {
+    const response = await fetch("https://id.twitch.tv/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token
+      })
+    });
+
+    const data = await response.json();
     return data;
   }
 
