@@ -21,7 +21,6 @@
 }
 
 html {
-  background-color: rgb(32, 29, 29);
   font-family: var(--font-family);
   user-select: none;
 }
@@ -33,7 +32,7 @@ html {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin: 50px;
+  margin-top: 20px;
 }
 
 .container {
@@ -52,6 +51,14 @@ html {
   font-family: "Chivo Mono", monospace;
   font-size: 70px;
   font-weight: 600;
+  display: flex;
+}
+
+.timer .text .colon {
+  width: 25px;
+  display: flex;
+  justify-content: center;
+  
 }
 
 .notification-container {
@@ -63,7 +70,6 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
 }
 
 .notification_user {
@@ -72,11 +78,13 @@ html {
 .notification_tag {
   padding: 5px 9px;
   border-radius: 5px;
+  margin-left: 10px;
 }
 
 .notification_tag.small {
   padding: 2px 5px;
   font-size: 19px;
+  margin-right: 10px;
 }
 
 .progress-bar {
@@ -114,12 +122,24 @@ html {
   display: flex;
   font-size: 24px;
   font-weight: bold;
-  gap: 10px;
   align-items: center;
 }
 
 .next-goal .text {
   font-weight: bold;
+  margin: 10px;
+}
+
+.next-goal .money-required {
+  font-size: 24px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.next-goal .goal-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: 10px;
 }
 
 .tag-color {
@@ -162,7 +182,17 @@ html {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"> <path d="M6 5m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"></path> <path d="M14 5m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"></path> </svg> 
       </div>
       <div class="text">
-        54:11:42
+        <div class="hours">
+          54
+        </div>
+        <div class="colon">:</div>
+        <div class="minutes">
+          11
+        </div>
+        <div class="colon">:</div>
+        <div class="seconds">
+          42
+        </div>
       </div>
     </div>
     <div class="progress-bar">
@@ -178,7 +208,7 @@ html {
     </div>
     <div class="next-goal">
       <div class="text">
-        Next Goal
+        Goal
       </div>
       <div class="money-required tag-color chivo-mono">
         $250
@@ -243,7 +273,9 @@ function update() {
       timer.querySelector(".paused-icon").style.display = "none";
     }
 
-    timer.querySelector('.text').innerText = formatSeconds(data.timer);
+    timer.querySelector('.text .hours').innerText = String(formatSeconds(data.timer).hours).padStart(2, '0');
+    timer.querySelector('.text .minutes').innerText = String(formatSeconds(data.timer).minutes).padStart(2, '0');
+    timer.querySelector('.text .seconds').innerText = String(formatSeconds(data.timer).seconds).padStart(2, '0');
   });
 
   if (data.most_recent_event) {
@@ -262,7 +294,7 @@ function update() {
       notification_tags.forEach(notification_tag => {
         notification_tag.style.backgroundColor = "<%= data.options.sub_notif_tag_color %>";
         notification_tag.style.color = "<%= data.options.sub_notif_tag_text_color %>";
-        notification_tag.innerText = `+${formatSeconds(data.most_recent_event.duration * data.most_recent_event.multiplier)}`;
+        notification_tag.innerText = `+${formatSeconds(data.most_recent_event.duration * data.most_recent_event.multiplier).string}`;
       });
     });
   } else {
@@ -283,8 +315,13 @@ function update() {
 
     progress_texts.forEach(progress_text => {
       progress_text.style.color = "<%= data.options.text_color %>";
+
       progress_text.innerText = currencies[data.currency] + data.donations + "/" + currencies[data.currency] + data.current_goal.goal;
     
+      if (data.current_goal.goal === 0) {
+        progress_text.innerText = currencies[data.currency] + data.donations
+      }
+
       animateProgressBar(data.donations, data.current_goal.goal, 1);
     });
   });
@@ -294,10 +331,10 @@ function update() {
     next_goal.style.paddingTop = "<%= data.options.next_goal_vertical_gap %>px";
 
     const money_required = next_goal.querySelector('.money-required');
-    money_required.innerText = currencies[data.currency] + data.next_goal.goal;
+    money_required.innerText = currencies[data.currency] + data.current_goal.goal;
 
     const goal_title = next_goal.querySelector('.goal-title');
-    goal_title.innerText = data.next_goal.title;
+    goal_title.innerText = data.current_goal.title;
   });
 }
 
@@ -345,7 +382,12 @@ function formatSeconds(seconds) {
 
   string += `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 
-  return string;
+  return {
+    hours,
+    minutes,
+    seconds: remainingSeconds,
+    string
+  };
 }
 </script>
 </html>

@@ -9,6 +9,8 @@
     "@twurple/api": "npm:@twurple/api@^7.2.0",
     "@twurple/auth": "npm:@twurple/auth@^7.2.0",
     "@twurple/eventsub-ws": "npm:@twurple/eventsub-ws@^7.2.0",
-    "ejs": "npm:ejs@^3.1.10"
+    "ejs": "npm:ejs@^3.1.10",
+    "socket.io": "npm:socket.io@^4.8.1",
+    "socket.io-client": "npm:socket.io-client@^4.8.1"
   }
 }

@@ -2,7 +2,7 @@
 
 import { Context } from "jsr:@oak/oak/context";
 import { Log } from "./Logger.ts";
-import { dataManager, subathonManager, twitchManager } from "./Manager.ts";
+import { dataManager, streamlabsManager, subathonManager, twitchManager } from "./Manager.ts";
 import { NgrokManager } from "./Ngrok.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
@@ -36,6 +36,11 @@ const authMiddleware = async (ctx: Context, next: Next) => {
 
 router.get("/twitch/login", (ctx) => {
   const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${config.client.id}&redirect_uri=${config.client.callback_url}&response_type=code&scope=${config.client.scopes.join("%20")}`;
+  ctx.response.redirect(redirectUrl);
+});
+
+router.get("/streamlabs/login", (ctx) => {
+  const redirectUrl = `https://streamlabs.com/api/v2.0/authorize?client_id=${config.streamlabs_client.id}&redirect_uri=${config.streamlabs_client.callback_url}&response_type=code&scope=${config.streamlabs_client.scopes.join("%20")}`;
   ctx.response.redirect(redirectUrl);
 });
 
@@ -93,6 +98,44 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
 
   ctx.cookies.set("logged_in", "true");
   ctx.cookies.set("access_token", codeToken.access_token);
+  ctx.response.body = "OK";
+});
+
+router.get("/streamlabs/callback", authMiddleware, async (ctx) => {
+  const params = ctx.request.url.searchParams;
+  const code = params.get("code");
+  const error = params.get("error");
+
+  if (streamlabsManager.logged_in) {
+    ctx.response.status = 400;
+    ctx.response.body = "User already logged in";
+    return;
+  }
+
+  if (error === "redirect_mismatch") {
+    Log(`Redirect URI mismatch. Make sure to update your Streamlabs application's redirect URI to: ${https}/streamlabs/callback`, "Server");
+  }
+
+  if (!code) {
+    ctx.response.status = 400;
+    ctx.response.body = "No code provided";
+    return;
+  }
+
+  const codeToken = await streamlabsManager.getAccessToken(code);
+  twitchManager.logged_in = true;
+
+  if (!codeToken.access_token) {
+    ctx.response.status = 401;
+    ctx.response.body = "Unauthorized";
+    return;
+  }
+
+  Log(`Streamlabs user has successfully logged in. Client ID now has requested permissions.`, "Server");
+
+  await streamlabsManager.main();
+  ctx.cookies.set("streamlabs_logged_in", "true");
+  ctx.cookies.set("streamlabs_access_token", codeToken.access_token);
   ctx.response.body = "OK";
 });
 
@@ -241,6 +284,7 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     Log(`Ngrok server ready at: ${https}`, "Server");
     Log(`The ngrok server will be used for all communications.`, "Server");
 
+    Log(`Waiting for user to log in at ${https}/streamlabs/login...`, "Server");
     Log(`Waiting for user to log in at ${https}/twitch/login...`, "Server");
   } else {
     Log(`Waiting for user to log in...`, "Server");

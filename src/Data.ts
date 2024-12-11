@@ -13,6 +13,12 @@ export type Config = {
     callback_url: string,
     scopes: string[]
   },
+  streamlabs_client: {
+    id: string,
+    secret: string,
+    callback_url: string,
+    scopes: string[]
+  },
   port: number,
   api_base: "https://api.twitch.tv/helix",
   eventsub_url: "https://api.twitch.tv/helix/eventsub/subscriptions",
@@ -49,6 +55,18 @@ export const globalData: Data = {
         "channel:manage:redemptions",
         "channel:moderate",
         "channel:read:subscriptions"
+      ]
+    },
+    streamlabs_client: {
+      id: "streamlabs_client_id",
+      secret: "streamlabs_client_secret",
+      callback_url: `{NGROK_URL}/streamlabs/callback`,
+      scopes: [
+        "donations.read",
+        "donations.create",
+        "alerts.create",
+        "alerts.update",
+        "socket.token"
       ]
     },
     port: 4450,
@@ -212,6 +230,7 @@ export class DataManager {
 
   static formatAllValues() {
     globalData.config.client.callback_url = DataManager.parseValue(globalData.config.client.callback_url);
+    globalData.config.streamlabs_client.callback_url = DataManager.parseValue(globalData.config.streamlabs_client.callback_url);
     globalData.config.eventsub_callback = DataManager.parseValue(globalData.config.eventsub_callback);
 
     return globalData;
