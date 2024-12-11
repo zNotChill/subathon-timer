@@ -2,12 +2,13 @@
 
 import { Context } from "jsr:@oak/oak/context";
 import { Log } from "./Logger.ts";
-import { dataManager, twitchManager } from "./Manager.ts";
+import { dataManager, subathonManager, twitchManager } from "./Manager.ts";
 import { NgrokManager } from "./Ngrok.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
 import { Next } from "jsr:@oak/oak/middleware";
 import ejs from "npm:ejs";
+import { preventBacktrack } from "./utils/Path.ts";
 
 const app = new Application;
 
@@ -149,6 +150,67 @@ router.get("/settings", authMiddleware, async (ctx) => {
 
   const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\settings.ejs`, data);
   ctx.response.body = html;
+});
+
+/* 
+  Elements Page
+*/
+
+router.get("/element", async (ctx) => {
+  const element = ctx.request.url.searchParams.get("s");
+  
+  // check {import.meta.dirname}\\frontend\\elements\\${element}.config.json
+  // if it exists, render the element
+  // else, return 404
+  
+  const elementConfig = preventBacktrack(`${import.meta.dirname}\\frontend\\elements\\${element}.config.json`);
+  const elementRender = preventBacktrack(`${import.meta.dirname}\\frontend\\elements\\${element}.ejs`);
+  let data = {};
+  
+  try {
+    data = JSON.parse(Deno.readTextFileSync(elementConfig));
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      ctx.response.status = 400;
+      ctx.response.body = "Config contains invalid JSON";
+      return;
+    }
+    
+    ctx.response.status = 404;
+    ctx.response.body = "Element not found";
+    return;
+  }
+
+  // if the object is {}, return 404
+  if (Object.keys(data).length === 0) {
+    ctx.response.status = 404;
+    ctx.response.body = "Element not found";
+    return;
+  }
+
+  // render the element
+
+  const renderData = {
+    data: data,
+    css: getPageCSS(["Main.css"]),
+    js: getPageJS([
+      "Core.js",
+      "Elements.js"
+    ]),
+    info: subathonManager.getRelevantInfo(),
+  };
+
+  const html = await ejs.renderFile(elementRender, renderData);
+  ctx.response.body = html;
+})
+
+/*
+  API
+*/
+
+router.get("/api/timer", (ctx) => {
+  ctx.response.status = 200;
+  ctx.response.body = subathonManager.getRelevantInfo();
 });
 
 app.use(router.routes());

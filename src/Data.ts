@@ -112,6 +112,7 @@ export const globalData: Data = {
     ],
     currency: "EUR",
     history: [],
+    donation_goals: [],
   }
 }
 

@@ -40,6 +40,7 @@ export type SubathonData = {
   rates: Rate[],
   currency: string, // no validation for now, I do not want to type out all the currencies
   history: Event[],
+  donation_goals: DonationGoal[],
 }
 
 export type Event = {
@@ -50,6 +51,13 @@ export type Event = {
   duration: number,
   donation: number,
   multiplier: number,
+  user_id: string,
+  user_name: string,
+}
+
+export type DonationGoal = {
+  goal: number,
+  title: string,
 }
 
 export class SubathonManager {
@@ -69,7 +77,7 @@ export class SubathonManager {
     this.sessionHistory = [];
     this.globalMultiplier = 1;
 
-    this.timer = 0;
+    this.timer = 600; // 10 mins by default, should this be configurable?
     this.donations = 0;
     this.donation_goal = 0;
 
@@ -85,6 +93,10 @@ export class SubathonManager {
 
   getEvents() {
     return this.sessionHistory;
+  }
+
+  getMostRecentEvent() {
+    return this.sessionHistory[this.sessionHistory.length - 1];
   }
 
   getRates() {
@@ -151,7 +163,6 @@ export class SubathonManager {
     this.donations = donations;
   }
 
-
   getRewardFromTwitchEvent(event: MessageEvent, type: SubscriptionType) {
     const eventValue: number = this.getMessageEventValue(event, type);
 
@@ -199,6 +210,8 @@ export class SubathonManager {
       duration: durationValue,
       donation: donationValue,
       multiplier: this.globalMultiplier,
+      user_id: event.user_id,
+      user_name: event.user_name,
     });
 
     this.setTimerFromHistory();
@@ -233,6 +246,8 @@ export class SubathonManager {
       duration: 0,
       donation: 0,
       multiplier: 1,
+      user_id: "",
+      user_name: "",
     });
 
     Log(`Timer has been paused at ${this.timer}.`, "SubathonManager");
@@ -251,8 +266,83 @@ export class SubathonManager {
       duration: time_paused,
       donation: 0,
       multiplier: 1,
+      user_id: "",
+      user_name: "",
     });
 
     Log(`Timer has been unpaused.`, "SubathonManager");
+  }
+
+  getRelevantInfo() {
+    return {
+      timer: this.timer,
+      multiplier: this.globalMultiplier,
+      currency: this.data.currency,
+      rates: this.data.rates,
+      paused: this.timer_paused,
+      paused_at: this.timer_paused_at,
+      donations: this.donations,
+      donation_goal: this.donation_goal,
+      most_recent_event: this.getMostRecentEvent(),
+      next_goal: this.getDonationGoal(this.getNextDonationGoal().index + 1) || {
+        goal: 0,
+        title: "No more goals!"
+      },
+      current_goal: this.getNextDonationGoal().goal || {
+        goal: 0,
+        title: "No goals yet!"
+      },
+      goals: this.getGoals(),
+    }
+  }
+
+  getNextDonationGoal() {
+    let nextGoal = this.data.donation_goals[0];
+
+    let nextGoalIndex = 0;
+    this.data.donation_goals.forEach(goal => {
+      if (this.donations >= goal.goal) {
+        nextGoal = this.data.donation_goals[nextGoalIndex + 1];
+        nextGoalIndex++;
+      }
+    });
+
+    return {
+      goal: nextGoal,
+      index: nextGoalIndex,
+    };
+  }
+
+  getDonationGoal(index: number) {
+    return this.data.donation_goals[index];
+  }
+
+  getGoals() {
+    return this.data.donation_goals;
+  }
+
+  main() {
+    Log("Subathon has started!", "SubathonManager");
+
+    Log(`Timer is at ${this.timer} seconds.`, "SubathonManager");
+    Log(`Donations are at ${this.donations} ${this.data.currency}.`, "SubathonManager");
+
+    // Start the timer
+    const interval = setInterval(() => {
+      if (this.timer_paused) {
+        return;
+      }
+
+      if (this.timer <= 0) {
+        Log("Subathon has ended!", "SubathonManager");
+        this.timer = 0;
+        clearInterval(interval);
+        return;
+      }
+
+      this.timer -= 1;
+
+      // Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
+    }, 1000);
   }
 }

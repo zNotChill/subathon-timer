@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { twitchManager } from "./Manager.ts";
+import { subathonManager, twitchManager } from "./Manager.ts";
 import { server } from "./Server.ts";
 import { DataManager } from "./Data.ts";
 import { Log } from "./Logger.ts";
@@ -35,6 +35,8 @@ const run = new cliffy.Command()
     }, config.backup_frequency * 1000);
 
     Log("All services are running.", "Main");
+
+    subathonManager.main();
   });
 
 const runSetup = async () => {
