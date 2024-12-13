@@ -1,67 +1,10 @@
+import { Data } from "./Data.ts";
 import { Log } from "./Logger.ts";
 import { dataManager } from "./Manager.ts";
-import { SubscriptionType } from "./types/EventSub.ts";
 import { MessageEvent } from "./types/EventSub.ts";
-
-// config_change is an internal event
-// used by the CLI to update the config
-// and it also logs to the events in order
-// to keep a comprehensive history of the
-// subathon without weird/incorrect gaps
-// in the data.
-
-export type EventType = SubscriptionType | 
-  "config_change" |
-  "donation" |
-  "money_added" |
-  "money_removed" |
-  "time_added" |
-  "time_removed" |
-  "time_reset" |
-  "time_paused" |
-  "time_unpaused";
-
-export type Rate = {
-  value: number,
-  duration: number,
-  type: EventType,
-
-  // whether the amount should adapt to the
-  // actual amount of money/viewers gained from bits/donations/raids
-  adaptive?: boolean,
-
-  // the amount of duration that should be added on top of the duration
-  // per extra bit/donation/viewer gained
-  adaptive_value?: number,
-  donation_value?: number,
-}
-
-export type SubathonData = {
-  rates: Rate[],
-  currency: string, // no validation for now, I do not want to type out all the currencies
-  history: Event[],
-  donation_goals: DonationGoal[],
-}
-
-export type Event = {
-  type: EventType,
-  value: number,
-  timestamp: number,
-  rate: Rate,
-  duration: number,
-  donation: number,
-  multiplier: number,
-  user_id: string,
-  user_name: string,
-}
-
-export type DonationGoal = {
-  goal: number,
-  title: string,
-}
-
+import { EventType, Rate, Event } from "./types/Subathon.ts";
 export class SubathonManager {
-  data: SubathonData;
+  data: Data;
   sessionHistory: Event[];
   globalMultiplier: number;
 
@@ -72,12 +15,24 @@ export class SubathonManager {
   timer_paused: boolean;
   timer_paused_at: number;
 
-  constructor(data: SubathonData) {
-    this.data = data;
-    this.sessionHistory = [];
+  constructor() {
+    this.data = dataManager.getData();
+    this.timer = 600; // 10 mins by default, should this be configurable?
+    this.sessionHistory = [
+      {
+        type: "time_added",
+        value: this.timer,
+        timestamp: Date.now(),
+        rate: {} as Rate,
+        duration: this.timer,
+        donation: 0,
+        multiplier: 1,
+        user_id: "",
+        user_name: "",
+      }
+    ];
     this.globalMultiplier = 1;
 
-    this.timer = 600; // 10 mins by default, should this be configurable?
     this.donations = 0;
     this.donation_goal = 0;
 
@@ -100,19 +55,19 @@ export class SubathonManager {
   }
 
   getRates() {
-    return this.data.rates;
+    return this.data.subathon_config.rates;
   }
 
   getCurrency() {
-    return this.data.currency;
+    return this.data.subathon_config.currency;
   }
 
   getRate(type: EventType) {
-    return this.data.rates.find(rate => rate.type === type);
+    return this.data.subathon_config.rates.find(rate => rate.type === type);
   }
 
   getAllRatesFromType(type: EventType) {
-    return this.data.rates.filter(rate => rate.type === type);
+    return this.data.subathon_config.rates.filter(rate => rate.type === type);
   }
 
   getTimer() {
@@ -123,7 +78,7 @@ export class SubathonManager {
     this.globalMultiplier = multiplier;
   }
 
-  getMessageEventValue(event: MessageEvent, type: SubscriptionType) {
+  getMessageEventValue(event: MessageEvent, type: EventType) {
     let eventValue: number = 0;
 
     switch (type) {
@@ -132,6 +87,9 @@ export class SubathonManager {
         break;
       case "channel.subscribe":
         eventValue = 1;
+        break;
+      case "donation":
+        eventValue = event.amount ?? 0;
         break;
     }
 
@@ -155,15 +113,14 @@ export class SubathonManager {
     let donations = 0;
 
     this.sessionHistory.forEach(event => {
-      if (event.type === "channel.cheer") {
+      if (event.donation && event.donation > 0)
         donations += event.donation;
-      }
     });
 
     this.donations = donations;
   }
 
-  getRewardFromTwitchEvent(event: MessageEvent, type: SubscriptionType) {
+  getRewardFromTwitchEvent(event: MessageEvent, type: EventType) {
     const eventValue: number = this.getMessageEventValue(event, type);
 
     const rates = this.getAllRatesFromType(type);
@@ -185,10 +142,15 @@ export class SubathonManager {
       }
     });
 
-    Log(`Used rate: ${usedRate.type} with value ${usedRate.value} and duration ${usedRate.duration}`, "SubathonManager");
+    // Log(`Used rate: ${usedRate.type} with value ${usedRate.value} and duration ${usedRate.duration}`, "SubathonManager");
     
     let durationValue = usedRate.duration;
     let donationValue = eventValue;
+
+    if (usedRate.multiply && usedRate.adaptive_value && usedRate.donation_value) {
+      durationValue *= eventValue * usedRate.adaptive_value;
+      donationValue = eventValue * usedRate.donation_value;
+    }
 
     if (usedRate.adaptive && usedRate.adaptive_value) {
       const difference = Math.abs(eventValue - usedRate.value);
@@ -217,21 +179,21 @@ export class SubathonManager {
     this.setTimerFromHistory();
     this.setDonationsFromHistory();
     
-    switch (type) {
+    switch (type as EventType) {
       case "channel.cheer":
         Log(`Received bit donation from ${event.user_name}. Cheered ${event.bits} bits!`, "SubathonManager");
-        Log(`Adding ${durationValue} seconds to the timer.`, "SubathonManager");
-        Log(`Adding ${donationValue} ${this.data.currency} to the timer.`, "SubathonManager");
         break;
       case "channel.subscribe": {
         Log(`Received subscription from ${event.user_name}.`, "SubathonManager");
-        Log(`Adding ${durationValue} seconds to the timer.`, "SubathonManager");
-        Log(`Adding ${donationValue} ${this.data.currency} to the timer.`, "SubathonManager");
+        break;
+      }
+      case "donation": {
+        Log(`Received donation from ${event.user_name}.`, "SubathonManager");
         break;
       }
     }
-    Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
-    Log(`Donations are now at ${this.donations} ${this.data.currency}.`, "SubathonManager");
+    Log(`Timer is now at ${this.timer} seconds (+${durationValue}).`, "SubathonManager");
+    Log(`Donations are now at ${this.donations} ${this.data.subathon_config.currency} (+${donationValue}).`, "SubathonManager");
   }
 
   pauseTimer() {
@@ -277,8 +239,8 @@ export class SubathonManager {
     return {
       timer: this.timer,
       multiplier: this.globalMultiplier,
-      currency: this.data.currency,
-      rates: this.data.rates,
+      currency: this.data.subathon_config.currency,
+      rates: this.data.subathon_config.rates,
       paused: this.timer_paused,
       paused_at: this.timer_paused_at,
       donations: this.donations,
@@ -297,12 +259,12 @@ export class SubathonManager {
   }
 
   getNextDonationGoal() {
-    let nextGoal = this.data.donation_goals[0];
+    let nextGoal = this.data.subathon_config.donation_goals[0];
 
     let nextGoalIndex = 0;
-    this.data.donation_goals.forEach(goal => {
+    this.data.subathon_config.donation_goals.forEach(goal => {
       if (this.donations >= goal.goal) {
-        nextGoal = this.data.donation_goals[nextGoalIndex + 1];
+        nextGoal = this.data.subathon_config.donation_goals[nextGoalIndex + 1];
         nextGoalIndex++;
       }
     });
@@ -314,18 +276,18 @@ export class SubathonManager {
   }
 
   getDonationGoal(index: number) {
-    return this.data.donation_goals[index];
+    return this.data.subathon_config.donation_goals[index];
   }
 
   getGoals() {
-    return this.data.donation_goals;
+    return this.data.subathon_config.donation_goals;
   }
 
   main() {
     Log("Subathon has started!", "SubathonManager");
 
     Log(`Timer is at ${this.timer} seconds.`, "SubathonManager");
-    Log(`Donations are at ${this.donations} ${this.data.currency}.`, "SubathonManager");
+    Log(`Donations are at ${this.donations} ${this.data.subathon_config.currency}.`, "SubathonManager");
 
     // Start the timer
     const interval = setInterval(() => {

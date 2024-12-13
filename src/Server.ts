@@ -2,7 +2,7 @@
 
 import { Context } from "jsr:@oak/oak/context";
 import { Log } from "./Logger.ts";
-import { dataManager, streamlabsManager, subathonManager, twitchManager } from "./Manager.ts";
+import { dataManager, storageManager, streamlabsManager, subathonManager, twitchManager } from "./Manager.ts";
 import { NgrokManager } from "./Ngrok.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
@@ -15,7 +15,7 @@ const app = new Application;
 const router = new Router();
 export const server = app;
 
-const config = dataManager.getConfig();
+const globalData = dataManager.getData();
 
 const ngrokManager = new NgrokManager();
 let https = "";
@@ -35,12 +35,12 @@ const authMiddleware = async (ctx: Context, next: Next) => {
 };
 
 router.get("/twitch/login", (ctx) => {
-  const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${config.client.id}&redirect_uri=${config.client.callback_url}&response_type=code&scope=${config.client.scopes.join("%20")}`;
+  const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${globalData.config.client.id}&redirect_uri=${globalData.config.client.callback_url}&response_type=code&scope=${globalData.config.client.scopes.join("%20")}`;
   ctx.response.redirect(redirectUrl);
 });
 
 router.get("/streamlabs/login", (ctx) => {
-  const redirectUrl = `https://streamlabs.com/api/v2.0/authorize?client_id=${config.streamlabs_client.id}&redirect_uri=${config.streamlabs_client.callback_url}&response_type=code&scope=${config.streamlabs_client.scopes.join("%20")}`;
+  const redirectUrl = `https://streamlabs.com/api/v2.0/authorize?client_id=${globalData.config.streamlabs_client.id}&redirect_uri=${globalData.config.streamlabs_client.callback_url}&response_type=code&scope=${globalData.config.streamlabs_client.scopes.join("%20")}`;
   ctx.response.redirect(redirectUrl);
 });
 
@@ -75,8 +75,8 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
   }
 
   if (
-    (codeUser.login !== config.expected_user.name) &&
-    (codeUser.user_id !== config.expected_user.id)
+    (codeUser.login !== globalData.config.expected_user.name) &&
+    (codeUser.user_id !== globalData.config.expected_user.id)
   ) {
     ctx.response.status = 403;
     ctx.response.body = "Unauthorized";
@@ -92,6 +92,11 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
   twitchManager.code_access_token = codeToken.access_token;
   twitchManager.code_user = codeUser;
   twitchManager.user_logged_in = true;
+
+  storageManager.set("access_token", codeToken.access_token);
+  storageManager.set("refresh_token", codeToken.refresh_token);
+  dataManager.saveData();
+
   await twitchManager.connectWebSocket();
 
   Log(`User ${codeUser.login} has successfully logged in. Client ID now has requested permissions.`, "Server");
@@ -133,6 +138,9 @@ router.get("/streamlabs/callback", authMiddleware, async (ctx) => {
 
   Log(`Streamlabs user has successfully logged in. Client ID now has requested permissions.`, "Server");
 
+  storageManager.set("streamlabs_access_token", codeToken.access_token);
+  dataManager.saveData();
+
   await streamlabsManager.main();
   ctx.cookies.set("streamlabs_logged_in", "true");
   ctx.cookies.set("streamlabs_access_token", codeToken.access_token);
@@ -143,9 +151,9 @@ router.post("/eventsub", async (ctx) => {
   if(!twitchManager.user_logged_in) return;
   const body = await ctx.request.body.json();
   const signature = ctx.request.headers.get("Twitch-Eventsub-Message-Signature") || "";
-  const isValid = twitchManager.validateMessage(signature, config.secret_key);
+  const isValid = twitchManager.validateMessage(signature, globalData.config.secret_key);
 
-  if (!isValid && config.verify_signature) {
+  if (!isValid && globalData.config.verify_signature) {
     ctx.response.status = 401;
     ctx.response.body = "Invalid signature";
     return;
@@ -200,9 +208,9 @@ router.get("/settings", authMiddleware, async (ctx) => {
 */
 
 router.get("/element", async (ctx) => {
-  const element = ctx.request.url.searchParams.get("s");
+  const element = ctx.request.url.searchParams.get("s");;
   
-  // check {import.meta.dirname}\\frontend\\elements\\${element}.config.json
+  // check {import.meta.dirname}\\frontend\\elements\\${element}.globalData.config.json
   // if it exists, render the element
   // else, return 404
   
@@ -224,6 +232,7 @@ router.get("/element", async (ctx) => {
     return;
   }
 
+  
   // if the object is {}, return 404
   if (Object.keys(data).length === 0) {
     ctx.response.status = 404;
@@ -258,7 +267,7 @@ router.get("/api/timer", (ctx) => {
 
 app.use(router.routes());
 app.listen({
-  port: config.port,
+  port: globalData.config.port,
 });
 
 // deno gets *VERY* angry if you underscore hostname
@@ -269,8 +278,9 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     "Server"
   );
 
+  https = `http://localhost:${port}`;
   // Start ngrok server
-  if (config.use_ngrok) {
+  if (globalData.config.use_ngrok) {
     Log(`Starting ngrok server...`, "Server");
     await ngrokManager.startNgrokServer();
 
@@ -283,10 +293,28 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     https = `https://${ngrokManager.getUrl()}`
     Log(`Ngrok server ready at: ${https}`, "Server");
     Log(`The ngrok server will be used for all communications.`, "Server");
+  }
 
+  if (
+    await storageManager.get("access_token") &&
+    await storageManager.get("refresh_token") &&
+    await storageManager.get("streamlabs_access_token")
+  ) {
+    Log(`User logged in.`, "Server");
+    Log(`Streamlabs user logged in.`, "Server");
+    Log(`All services are running.`, "Server");
+
+    streamlabsManager.access_token = await storageManager.get("streamlabs_access_token");
+    twitchManager.code_access_token = await storageManager.get("access_token");
+    twitchManager.code_user = await twitchManager.validateToken(twitchManager.code_access_token, "Bearer");
+    twitchManager.user_logged_in = true;
+
+    await subathonManager.main();
+    await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
+    await twitchManager.connectWebSocket();
+    await streamlabsManager.main();
+  } else {
     Log(`Waiting for user to log in at ${https}/streamlabs/login...`, "Server");
     Log(`Waiting for user to log in at ${https}/twitch/login...`, "Server");
-  } else {
-    Log(`Waiting for user to log in...`, "Server");
   }
 });

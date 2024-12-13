@@ -1,15 +1,16 @@
-import { Config } from "./Data.ts";
+import { Config, Data } from "./Data.ts";
 import { User } from "./types/User.ts";
 import { Log, Error } from "./Logger.ts";
 import { SubscriptionType } from "./types/EventSub.ts";
 import { SubathonManager } from "./Subathon.ts";
+import { dataManager } from "./Manager.ts";
 
 export class TwitchManager {
   access_token: string;
   refresh_token: string;
   code_access_token: string;
   code_refresh_token: string;
-  config: Config;
+  data: Data;
   user: User;
   code_user: User;
   ws: WebSocket | null;
@@ -19,8 +20,8 @@ export class TwitchManager {
 
   subathonManager: SubathonManager;
 
-  constructor(config: Config, subathonManager: SubathonManager) {
-    this.config = config;
+  constructor(subathonManager: SubathonManager) {
+    this.data = dataManager.getData();
 
     this.access_token = "";
     this.refresh_token = "";
@@ -57,10 +58,10 @@ export class TwitchManager {
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: new URLSearchParams({
-        client_id: this.config.client.id,
-        client_secret: this.config.client.secret,
+        client_id: this.data.config.client.id,
+        client_secret: this.data.config.client.secret,
         grant_type: "client_credentials",
-        scope: this.config.client.scopes.join(" ")
+        scope: this.data.config.client.scopes.join(" ")
       })
     })
 
@@ -71,6 +72,28 @@ export class TwitchManager {
     return data;
   }
 
+  async refreshAccessToken(refresh: string) {
+    const response = await fetch("https://id.twitch.tv/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refresh,
+        client_id: this.data.config.client.id,
+        client_secret: this.data.config.client.secret
+      })
+    });
+
+    const data = await response.json();
+    this.access_token = data.access_token;
+    this.refresh_token = data.refresh_token;
+
+    return data;
+  }
+
+
   async getAccessTokenFromCode(code: string) {
     const response = await fetch("https://id.twitch.tv/oauth2/token", {
       method: "POST",
@@ -78,10 +101,10 @@ export class TwitchManager {
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: new URLSearchParams({
-        client_id: this.config.client.id,
-        client_secret: this.config.client.secret,
+        client_id: this.data.config.client.id,
+        client_secret: this.data.config.client.secret,
         grant_type: "authorization_code",
-        redirect_uri: this.config.client.callback_url,
+        redirect_uri: this.data.config.client.callback_url,
         code
       })
     });
@@ -196,7 +219,7 @@ export class TwitchManager {
       case "channel.follow": {
         version = "2";
         condition = {
-          broadcaster_user_id: this.config.channel.id,
+          broadcaster_user_id: this.data.config.channel.id,
           moderator_user_id: this.code_user.user_id
         };
         break;
@@ -204,14 +227,14 @@ export class TwitchManager {
       case "channel.cheer": {
         version = "1";
         condition = {
-          broadcaster_user_id: this.config.channel.id
+          broadcaster_user_id: this.data.config.channel.id
         }
         break;
       }
       case "channel.subscribe": {
         version = "1";
         condition = {
-          broadcaster_user_id: this.config.channel.id
+          broadcaster_user_id: this.data.config.channel.id
         }
       }
     }
@@ -219,7 +242,7 @@ export class TwitchManager {
     const response = await fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
       method: "POST",
       headers: {
-        "Client-ID": this.config.client.id,
+        "Client-ID": this.data.config.client.id,
         "Authorization": `Bearer ${this.code_access_token}`,
         "Content-Type": "application/json",
       },

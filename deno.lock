@@ -26,6 +26,7 @@
     "npm:ejs@*": "3.1.10",
     "npm:ejs@^3.1.10": "3.1.10",
     "npm:path-to-regexp@6.2.1": "6.2.1",
+    "npm:socket.io-client@*": "4.8.1",
     "npm:socket.io-client@^4.8.1": "4.8.1",
     "npm:socket.io@^4.8.1": "4.8.1"
   },
@@ -506,6 +507,11 @@
       "integrity": "sha512-TEU+nJVUUnA4CYJFLvK5X9AOeH4KvDvhIfm0vV1GaQRtchnG0hgK5p8hw/xjv8cunWYCsiPCSDzObPyhEwq3KQ=="
     }
   },
+  "redirects": {
+    "https://deno.land/x/dotenv/mod.ts": "https://deno.land/x/dotenv@v3.2.2/mod.ts",
+    "https://deno.land/x/god_crypto/aes.ts": "https://deno.land/x/god_crypto@v1.4.11/aes.ts",
+    "https://deno.land/x/secret_store/mod.ts": "https://deno.land/x/secret_store@v0.1.1/mod.ts"
+  },
   "remote": {
     "https://deno.land/std@0.118.0/async/deadline.ts": "1d6ac7aeaee22f75eb86e4e105d6161118aad7b41ae2dd14f4cfd3bf97472b93",
     "https://deno.land/std@0.118.0/async/debounce.ts": "b2f693e4baa16b62793fd618de6c003b63228db50ecfe3bd51fc5f6dc0bc264b",
@@ -588,8 +594,22 @@
     "https://deno.land/std@0.150.0/log/levels.ts": "82c965b90f763b5313e7595d4ba78d5095a13646d18430ebaf547526131604d1",
     "https://deno.land/std@0.150.0/log/logger.ts": "4d25581bc02dfbe3ad7e8bb480e1f221793a85be5e056185a0cea134f7a7fdf4",
     "https://deno.land/std@0.150.0/log/mod.ts": "65d2702785714b8d41061426b5c279f11b3dcbc716f3eb5384372a430af63961",
+    "https://deno.land/std@0.97.0/encoding/hex.ts": "f952e0727bddb3b2fd2e6889d104eacbd62e92091f540ebd6459317a61932d9b",
+    "https://deno.land/x/dotenv@v3.2.2/mod.ts": "077b48773de9205266a0b44c3c3a3c3083449ed64bb0b6cc461b95720678d38e",
+    "https://deno.land/x/dotenv@v3.2.2/util.ts": "693730877b13f8ead2b79b2aa31e2a0652862f7dc0c5f6d2f313f4d39c7b7670",
+    "https://deno.land/x/god_crypto@v1.4.11/aes.ts": "aeb7231d684cf8ca50b1ff1d12334f4f344e0009de0958f27a792edb18bf4729",
+    "https://deno.land/x/god_crypto@v1.4.11/src/aes/aes_base.ts": "58389d3fa2c7a3b9a592386e3d6494e74405b600a32db743eb6a60cf306dcd99",
+    "https://deno.land/x/god_crypto@v1.4.11/src/aes/aes_js.ts": "916e1a1044a234bcb43d866b03ce97d91da31936b08b8e01e983bcfa0af93e92",
+    "https://deno.land/x/god_crypto@v1.4.11/src/aes/aes_wc.ts": "2862cc3b1d514586e58a1b7ac84506299e80dac03c23c669b73c90a482133f88",
+    "https://deno.land/x/god_crypto@v1.4.11/src/aes/block_ciper_operator.ts": "40c178a667737b20b19d3d2039553474ce0f2d2f392fd7ad12db092d7e4d8428",
+    "https://deno.land/x/god_crypto@v1.4.11/src/aes/common.ts": "6e3be9bd60197c88a104bbe255a87e5809fcebd2d6f632e43fcec95a62a6bab5",
+    "https://deno.land/x/god_crypto@v1.4.11/src/aes/mod.ts": "35b432fa555d759310d9e573bdd42e2d3cd2a8c8007227f779c0098b22701535",
+    "https://deno.land/x/god_crypto@v1.4.11/src/binary.ts": "f8c2ce60f9e0295cd54bbc3008cc4b388e919aa9128767d5f8e7eb4dd34fc8b4",
+    "https://deno.land/x/god_crypto@v1.4.11/src/helper.ts": "e664a39ea7c3300765e5daeec4e55036b7fc810b27c7d806bd1ec24e19bc09b7",
     "https://deno.land/x/ngrok@4.0.1/deps.ts": "e9972c4bf050699cf98aaa3887ed5be5911f8f3ca443183bc5145c2a6e38f921",
     "https://deno.land/x/ngrok@4.0.1/mod.ts": "63f18ee372119917863738e438ba1c4fc871fd493aa1c0fe8c40c74df90b3f60",
+    "https://deno.land/x/secret_store@v0.1.1/deps.ts": "b43af1d626d3d992aa3bfaf8415ba7c11d467f62c86913e0cfb36990847de854",
+    "https://deno.land/x/secret_store@v0.1.1/mod.ts": "89a778eabfe63443219afe828764a5d73d73ec41cf2d8af8d3f636aa11b8997e",
     "https://deno.land/x/socket_io@0.1.1/deps.ts": "136b3fc7c55f2a06a367965da3395f1bf7de66d36a0d91c5f795084fa8c67ab3",
     "https://deno.land/x/socket_io@0.1.1/mod.ts": "cc52c1f6fc1a647d7ac62d22d3125063cc598e8b291b14c0d51dc66c722afb9b",
     "https://deno.land/x/socket_io@0.1.1/packages/engine.io-parser/base64-arraybuffer.ts": "57ccea6679609df5416159fcc8a47936ad28ad6fe32235ef78d9223a3a823407",

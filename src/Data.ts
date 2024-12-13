@@ -1,4 +1,4 @@
-import { Event, SubathonData } from "./Subathon.ts";
+import { Event, SubathonData } from "./types/Subathon.ts";
 
 export type Data = {
   config: Config,
@@ -40,8 +40,6 @@ export type Config = {
 export type AppData = {
   first_run: boolean,
   ngrok_url: string,
-  access_token: string,
-  refresh_token: string,
 }
 
 export const globalData: Data = {
@@ -88,9 +86,7 @@ export const globalData: Data = {
   },
   app: {
     first_run: true,
-    ngrok_url: "",
-    access_token: "",
-    refresh_token: ""
+    ngrok_url: ""
   },
   subathon_config: {
     rates: [
@@ -156,30 +152,44 @@ export class DataManager {
     return globalData;
   }
 
-  static loadData() {
-    this.createFiles();
+  static async loadData() {
+    Deno.mkdirSync("data", { recursive: true });
+
     // Load data/config.json
-    const configData = Deno.readFileSync("data/config.json");
-    const configText = new TextDecoder().decode(configData);
-    const config: Config = JSON.parse(configText);
-    
-    globalData.config = config;
+    try {
+      const configData = Deno.readFileSync("data/config.json");
+      const configText = new TextDecoder().decode(configData);
+      const config: Config = JSON.parse(configText);
+      
+      globalData.config = config;
+    } catch (_error) {
+      Deno.writeFileSync("data/config.json", new TextEncoder().encode(JSON.stringify(globalData.config, null, 2)));
+    }
 
     // Load data/data.json
-    const appData = Deno.readFileSync("data/data.json");
-    const appText = new TextDecoder().decode(appData);
-    const app: AppData = JSON.parse(appText);
-
-    globalData.app = app;
+    try {
+      const appData = Deno.readFileSync("data/data.json");
+      const appText = new TextDecoder().decode(appData);
+      const app: AppData = JSON.parse(appText);
+      
+      globalData.app = app;
+    } catch (_error) {
+      Deno.writeFileSync("data/data.json", new TextEncoder().encode(JSON.stringify(globalData.app, null, 2)));
+    }
 
     // Load data/subathon.json
-    const subathonData = Deno.readFileSync("data/subathon.json");
-    const subathonText = new TextDecoder().decode(subathonData);
-    const subathon: SubathonData = JSON.parse(subathonText);
+    try {
+      const subathonData = Deno.readFileSync("data/subathon.json");
+      const subathonText = new TextDecoder().decode(subathonData);
+      const subathon: SubathonData = JSON.parse(subathonText);
+      
+      globalData.subathon_config = subathon;
+    } catch (_error) {
+      Deno.writeFileSync("data/subathon.json", new TextEncoder().encode(JSON.stringify(globalData.subathon_config, null, 2)));
+    }
 
-    globalData.subathon_config = subathon;
-
-    this.formatAllValues();
+    await this.saveData();
+    await this.formatAllValues();
     return globalData;
   }
   
@@ -188,12 +198,14 @@ export class DataManager {
   }
 
   static createFiles() {
+    const files = [];
     // Create data directory
     Deno.mkdirSync("data", { recursive: true });
 
     // Create config.json if it doesn't exist
     try {
       Deno.readFileSync("data/config.json");
+      files.push("config.json");
     } catch {
       Deno.writeFileSync("data/config.json", new TextEncoder().encode(""));
     }
@@ -201,6 +213,7 @@ export class DataManager {
     // Create data.json if it doesn't exist
     try {
       Deno.readFileSync("data/data.json");
+      files.push("data.json");
     } catch {
       Deno.writeFileSync("data/data.json", new TextEncoder().encode(""));
     }
@@ -208,11 +221,11 @@ export class DataManager {
     // Create subathon.json if it doesn't exist
     try {
       Deno.readFileSync("data/subathon.json");
+      files.push("subathon.json");
     } catch {
       Deno.writeFileSync("data/subathon.json", new TextEncoder().encode(""));
     }
-
-    return globalData;
+    return files;
   }
   
   static saveData() {
@@ -232,7 +245,7 @@ export class DataManager {
     globalData.config.client.callback_url = DataManager.parseValue(globalData.config.client.callback_url);
     globalData.config.streamlabs_client.callback_url = DataManager.parseValue(globalData.config.streamlabs_client.callback_url);
     globalData.config.eventsub_callback = DataManager.parseValue(globalData.config.eventsub_callback);
-
+    
     return globalData;
   }
 
@@ -249,8 +262,6 @@ export class DataManager {
   static removeSensitiveValues(data: Data) {
     const newData = data;
 
-    newData.app.access_token = "";
-    newData.app.refresh_token = "";
     newData.config.secret_key = "";
     newData.config.client.secret = "";
 

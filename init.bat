@@ -1,0 +1,1 @@
+deno install -n apricot --allow-read --allow-write --allow-env --allow-net --allow-run --allow-sys ./src/cli.ts -f --global

@@ -90,6 +90,7 @@ export type MessageEvent = {
   followed_at?: string,
   tier?: string,
   is_gift?: boolean,
+  amount?: number,
 }
 
 export type DescribedSubscriptionType = {

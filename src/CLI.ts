@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { subathonManager, twitchManager } from "./Manager.ts";
+import { dataManager, subathonManager, twitchManager } from "./Manager.ts";
 import { server } from "./Server.ts";
 import { DataManager } from "./Data.ts";
 import { Log } from "./Logger.ts";
@@ -16,6 +16,8 @@ let backup_interval;
 const run = new cliffy.Command()
   .description("Run the services (server, Twitch API, etc).")
   .action(async () => {
+    dataManager.loadData();
+    
     if (appdata.first_run)
       await runSetup();
 
@@ -26,17 +28,12 @@ const run = new cliffy.Command()
     }
 
     await server;
-    await twitchManager.main();
     // await watchConfig(); error: Uncaught (in promise) ReferenceError: Cannot access 'options' before initialization
 
     backup_interval = setInterval(() => {
       const backupName = DataManager.saveBackup(DataManager.getData());
       Log(`Data has been backed up to ${backupName}`, "Backup");
     }, config.backup_frequency * 1000);
-
-    Log("All services are running.", "Main");
-
-    subathonManager.main();
   });
 
 const runSetup = async () => {
@@ -44,10 +41,16 @@ const runSetup = async () => {
 
   appdata = DataManager.getAppData();
 
+  Log(`Creating random secret key...`, "Setup");
+  const key = crypto.getRandomValues(new Uint8Array(32));
+  const keyString = btoa(String.fromCharCode(...key));
+
+  Deno.writeFileSync(".env", new TextEncoder().encode(`SECRET_KEY=${keyString}`));
+
   Log("Setup complete.", "Setup");
 
   appdata.first_run = false;
-  DataManager.saveData();
+  dataManager.saveData();
 }
   
 const { options } = await new cliffy.Command()
