@@ -232,13 +232,16 @@ function renderSettings(tab) {
 }
 
 renderSettings("config");
+setOptionActive("settings", true);
 
 document.querySelectorAll(".sidebar-option").forEach((tab) => {
+  if (!tab.hasAttribute("tab")) return;
   const tabName = tab.attributes["tab"].value;
+  if(!tabName) return;
   tab.addEventListener("click", () => {
     renderSettings(tabName, "subathon");
 
-    document.querySelectorAll(".sidebar-option").forEach((tab) => {
+    document.querySelectorAll(".sidebar-option[tab]").forEach((tab) => {
       tab.classList.remove("active");
     });
     tab.classList.add("active");

@@ -11,6 +11,7 @@ export type Config = {
     id: string,
     secret: string,
     callback_url: string,
+    bot_callback_url: string,
     scopes: string[]
   },
   streamlabs_client: {
@@ -32,6 +33,10 @@ export type Config = {
     name: string,
     id: string
   },
+  bot_user: {
+    name: string,
+    id: string
+  },
   use_ngrok: boolean,
   backup_frequency: number,
   verify_signature: boolean,
@@ -50,6 +55,7 @@ export const globalData: Data = {
       id: "client_id",
       secret: "client_secret",
       callback_url: `{NGROK_URL}/twitch/callback`,
+      bot_callback_url: `{NGROK_URL}/twitch/bot/callback`,
       scopes: [
         "channel:read:redemptions",
         "channel:manage:redemptions",
@@ -81,6 +87,10 @@ export const globalData: Data = {
     expected_user: {
       name: "expected_user_name",
       id: "expected_user_id"
+    },
+    bot_user: {
+      name: "bot_user_name",
+      id: "bot_user_id"
     },
     use_ngrok: true,
     backup_frequency: 60,

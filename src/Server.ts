@@ -9,6 +9,7 @@ import { Router } from "jsr:@oak/oak/router";
 import { Next } from "jsr:@oak/oak/middleware";
 import ejs from "npm:ejs";
 import { preventBacktrack } from "./utils/Path.ts";
+import { commands } from "./Bot.ts";
 
 const app = new Application;
 
@@ -29,7 +30,15 @@ export function setAuthOverride(value: boolean) {
 // authed middleware
 const authMiddleware = async (ctx: Context, next: Next) => {
   const cookies = ctx.cookies;
-  const access_token = await cookies.get("access_token");
+  let access_token = await cookies.get("access_token");
+  const refresh_token = await cookies.get("refresh_token");
+
+  // if the refresh token matches the current refresh token
+  // but the access token doesn't, we need to set the access token to the new one
+  if (access_token !== twitchManager.code_access_token && refresh_token === twitchManager.refresh_token) {
+    access_token = twitchManager.code_access_token;
+    ctx.cookies.set("access_token", access_token);
+  }
 
   if (access_token !== twitchManager.code_access_token && twitchManager.user_logged_in) {
     ctx.response.status = 401;
@@ -42,6 +51,11 @@ const authMiddleware = async (ctx: Context, next: Next) => {
 
 router.get("/twitch/login", (ctx) => {
   const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${globalData.config.client.id}&redirect_uri=${globalData.config.client.callback_url}&response_type=code&scope=${globalData.config.client.scopes.join("%20")}`;
+  ctx.response.redirect(redirectUrl);
+});
+
+router.get("/twitch/bot/login", (ctx) => {
+  const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${globalData.config.client.id}&redirect_uri=${globalData.config.client.bot_callback_url}&response_type=code&scope=${globalData.config.client.scopes.join("%20")}`;
   ctx.response.redirect(redirectUrl);
 });
 
@@ -73,7 +87,7 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
 
   const codeToken = await twitchManager.getAccessTokenFromCode(code);
   const codeUser = await twitchManager.validateToken(codeToken.access_token, "Bearer");
-
+  
   if (codeUser === "Invalid token") {
     ctx.response.status = 401;
     ctx.response.body = "Invalid token";
@@ -81,8 +95,10 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
   }
 
   if (
-    (codeUser.login !== globalData.config.expected_user.name) &&
-    (codeUser.user_id !== globalData.config.expected_user.id)
+    (
+      (codeUser.login !== globalData.config.expected_user.name) &&
+      (codeUser.user_id !== globalData.config.expected_user.id) // this is the user that the program expects to be logged in, and is an admin
+    )
   ) {
     ctx.response.status = 403;
     ctx.response.body = "Unauthorized";
@@ -109,6 +125,7 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
 
   ctx.cookies.set("logged_in", "true");
   ctx.cookies.set("access_token", codeToken.access_token);
+  ctx.cookies.set("refresh_token", codeToken.refresh_token);
   ctx.response.body = "OK";
 });
 
@@ -150,6 +167,68 @@ router.get("/streamlabs/callback", authMiddleware, async (ctx) => {
   await streamlabsManager.main();
   ctx.cookies.set("streamlabs_logged_in", "true");
   ctx.cookies.set("streamlabs_access_token", codeToken.access_token);
+  ctx.response.body = "OK";
+});
+
+
+router.get("/twitch/bot/callback", async (ctx) => {
+  const params = ctx.request.url.searchParams;
+  const code = params.get("code");
+  const error = params.get("error");
+
+  if (botManager.logged_in) {
+    ctx.response.status = 400;
+    ctx.response.body = "User already logged in";
+    return;
+  }
+
+  if (error === "redirect_mismatch") {
+    Log(`Redirect URI mismatch. Make sure to update your Twitch application's redirect URI to: ${https}/twitch/callback`, "Server");
+  }
+
+  if (!code) {
+    ctx.response.status = 400;
+    ctx.response.body = "No code provided";
+    return;
+  }
+
+  const codeToken = await twitchManager.getAccessTokenFromCode(code);
+  const codeUser = await twitchManager.validateToken(codeToken.access_token, "Bearer");
+
+  if (codeUser === "Invalid token") {
+    ctx.response.status = 401;
+    ctx.response.body = "Invalid token";
+    return;
+  }
+
+  if (
+    (codeUser.login !== globalData.config.bot_user.name) &&
+    (codeUser.user_id !== globalData.config.bot_user.id)
+  ) {
+    ctx.response.status = 403;
+    ctx.response.body = "Unauthorized";
+    return;
+  }
+
+  if (!codeToken.access_token) {
+    ctx.response.status = 401;
+    ctx.response.body = "Unauthorized";
+    return;
+  }
+
+  botManager.logged_in = true;
+
+  storageManager.set("bot_access_token", codeToken.access_token);
+  storageManager.set("bot_refresh_token", codeToken.refresh_token);
+  dataManager.saveData();
+
+  await twitchManager.connectWebSocket();
+
+  Log(`Bot user ${codeUser.login} has successfully logged in.`, "Server");
+
+  await botManager.start();
+  ctx.cookies.set("logged_in", "true");
+  ctx.cookies.set("bot_access_token", codeToken.access_token);
   ctx.response.body = "OK";
 });
 
@@ -202,12 +281,32 @@ router.get("/settings", authMiddleware, async (ctx) => {
     data: dataManager.removeSensitiveValues(dataManager.getData()),
     css: getPageCSS(["Main.css"]),
     js: getPageJS(["Core.js", "Settings.js"]),
-    access_token: access_token
+    access_token: access_token,
+    authenticated: true,
   };
 
   const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\settings.ejs`, data);
   ctx.response.body = html;
 });
+
+router.get("/commands", async (ctx) => {
+  const cookies = ctx.cookies;
+  const access_token = await cookies.get("access_token");
+
+  console.log(access_token, twitchManager.code_access_token);
+  
+  const data = {
+    user: twitchManager.code_user,
+    data: dataManager.removeSensitiveValues(dataManager.getData()),
+    css: getPageCSS(["Main.css"]),
+    js: getPageJS(["Core.js", "Commands.js"]),
+    access_token: access_token,
+    authenticated: twitchManager.code_access_token === access_token,
+  };
+
+  const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\commands.ejs`, data);
+  ctx.response.body = html;
+})
 
 /* 
   Elements Page
@@ -271,6 +370,13 @@ router.get("/api/timer", (ctx) => {
   ctx.response.body = subathonManager.getRelevantInfo();
 });
 
+router.get("/api/commands", (ctx) => {
+  const commandsArray = Array.from(commands.values());
+
+  ctx.response.status = 200;
+  ctx.response.body = commandsArray;
+})
+
 app.use(router.routes());
 app.listen({
   port: globalData.config.port,
@@ -301,6 +407,10 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     Log(`The ngrok server will be used for all communications.`, "Server");
   }
 
+  // console.log(await storageManager.get("access_token"));
+  // console.log(await storageManager.get("refresh_token"));
+  // console.log(await storageManager.get("streamlabs_access_token"));
+  
   if (
     await storageManager.get("access_token") &&
     await storageManager.get("refresh_token") &&
@@ -317,7 +427,14 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     twitchManager.user_logged_in = true;
 
     await subathonManager.main();
-    await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
+    const refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
+    
+    twitchManager.access_token = refresh_data.access_token;
+    twitchManager.refresh_token = refresh_data.refresh_token;
+    storageManager.set("access_token", refresh_data.access_token);
+    storageManager.set("refresh_token", refresh_data.refresh_token);
+    await dataManager.saveData();
+    
     await twitchManager.connectWebSocket();
     await streamlabsManager.main();
 
@@ -325,9 +442,10 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
   } else {
     Log(`Waiting for user to log in at ${https}/streamlabs/login...`, "Server");
     Log(`Waiting for user to log in at ${https}/twitch/login...`, "Server");
+    Log(`Waiting for user to log in at ${https}/twitch/bot/login...`, "Server");
 
     for (let i = 0; i < 3; i++) {
-      Log(`Once you have logged in on both, restart the program.`, "Server");
+      Log(`Once you have logged in on all, restart the program.`, "Server");
     }
   }
 });

@@ -87,9 +87,6 @@ export class TwitchManager {
     });
 
     const data = await response.json();
-    this.access_token = data.access_token;
-    this.refresh_token = data.refresh_token;
-
     return data;
   }
 

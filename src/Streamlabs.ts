@@ -1,4 +1,3 @@
-import { Config } from "./Data.ts";
 import io, { Socket } from "npm:socket.io-client";
 import { Log } from "./Logger.ts";
 import { Error } from "./Logger.ts";

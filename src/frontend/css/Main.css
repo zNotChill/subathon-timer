@@ -133,6 +133,12 @@ body.settings_page .settings-container {
   background-color: var(--lighter);
 }
 
+.sidebar-splitter {
+  height: 1px;
+  background-color: var(--lighter-text);
+  margin: 10px 0;
+}
+
 /* Settings */
 
 .settings-container {
@@ -192,6 +198,26 @@ body.settings_page .settings-container {
   color: var(--lighter-text);
   display: inline;
   margin-left: 10px;
+}
+
+/* Command Container */
+
+.command {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+  padding: 5px calc(20px + var(--section-padding));
+  transition: background-color var(--transition-time);
+  font-weight: 500;
+  height: 50px;
+  position: relative;
+
+  border-bottom: 1px solid var(--lighter);
+}
+
+.command:hover {
+  background-color: var(--lighter);
 }
 
 /* Inputs */

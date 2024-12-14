@@ -241,6 +241,7 @@ export class SubathonManager {
     return {
       timer: this.timer,
       multiplier: this.globalMultiplier,
+      multiplier_countdown: this.globalMultiplierCountdown,
       currency: this.data.subathon_config.currency,
       rates: this.data.subathon_config.rates,
       paused: this.timer_paused,

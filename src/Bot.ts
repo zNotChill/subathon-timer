@@ -1,14 +1,16 @@
 import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
-import { dataManager, storageManager, subathonManager } from "./Manager.ts";
+import { dataManager, storageManager } from "./Manager.ts";
 import { Log } from "./Logger.ts";
+import { RateChangeCommand } from "./bot/commands/Rate.ts";
 
 export class BotManager {
   channel: Channel | undefined;
   twitchChat: TwitchChat | undefined;
+  logged_in: boolean = false;
 
   async start() {
     this.twitchChat = new TwitchChat(
-      await storageManager.get("access_token"),
+      await storageManager.get("bot_access_token"),
       dataManager.getData().config.expected_user.name
     );
 
@@ -16,6 +18,7 @@ export class BotManager {
     this.channel = this.twitchChat.joinChannel(dataManager.getData().config.channel.name);
     
     this.channel.addEventListener("join", (event) => {
+      this.logged_in = true;
       Log(`Joined channel ${event.channel}`, "BotManager");
     });
 
@@ -38,7 +41,7 @@ export class BotManager {
   }
 }
 
-const commands = new Map<string, Command>();
+export const commands = new Map<string, Command>();
 
 export const registerCommand = (command: Command) => {
   commands.set(command.name, command);
@@ -52,89 +55,14 @@ export interface Command {
   name: string;
   description: string;
   usage: string;
+  parameters: {
+    name: string;
+    description: string;
+    type: "string" | "number" | "boolean";
+    required: boolean
+  }[];
   auth: boolean;
   execute: (args: string[], channel: Channel, user: string) => void;
 }
 
-const RateChangeCommand: Command = {
-  name: "rate",
-  description: "Change the rate of the subathon events!",
-  usage: "rate <rate> <duration (mins)>",
-  auth: true,
-  execute: (args: string[], channel: Channel, user: string) => {
-    if (args.length === 0) {
-      channel.send(`@${user}, please provide a rate.`);
-      return;
-    }
-    
-    let rate: number | string = args[0];
-
-    if (isNaN(parseInt(rate))) {
-      channel.send(`@${user}, please provide a valid rate.`);
-      return;
-    }
-
-    let duration: number | string | undefined = args[1];
-
-    if (!duration || isNaN(parseInt(duration))) {
-      duration = 5e30; // placeholder for infinite duration
-    }
-
-    if (subathonManager.isPaused()) {
-      channel.send(`@${user}, the subathon is paused.`);
-      return;
-    }
-
-    rate = parseInt(rate);
-    if (subathonManager.globalMultiplier === rate) {
-      channel.send(`@${user}, rate is already set to ${rate}.`);
-      return;
-    }
-
-    subathonManager.globalMultiplier = rate;
-    subathonManager.globalMultiplierCountdown = parseInt(duration.toString()) * 60;
-    channel.send(`@${user}, changing rate to ${rate}x for ${duration} minutes.`);
-  }
-}
-
 commands.set(RateChangeCommand.name, RateChangeCommand);
-
-// import tmi from "npm:tmi.js@1.8.3";
-// import { dataManager, storageManager } from "./Manager.ts";
-
-// export class BotManager {
-//   client: tmi.Client;
-
-//   constructor() {
-//     const access_token = storageManager.get("access_token");
-//     this.client = new tmi.Client({
-//       options: { debug: true },
-//       connection: {
-//         reconnect: true,
-//         secure: true
-//       },
-//       identity: {
-//         username: dataManager.getConfig().expected_user.name,
-//         password: Promise.resolve(access_token) as unknown as string
-//       },
-//       channels: [dataManager.getConfig().channel.name]
-//     });
-//     this.initialize();
-//   }
-
-//   async initialize() {
-//     this.client.opts.identity.password = await storageManager.get("access_token") as string;
-//   }
-
-//   async start() {
-//     await this.client.connect();
-    
-//     this.client.on("message", (channel: any, tags: any, message: any, self: any) => {
-//       if (self) return;
-      
-//       if (message.startsWith("!hello")) {
-//         this.client.say(channel, `@${tags.username}, Kill Yourself`);
-//       }
-//     });
-//   }
-// }

@@ -371,7 +371,7 @@ setInterval(async () => {
   // the timer will still update to avoid
   // poor user experience
 
-  if (!data.paused) {
+  if (!data.paused && data.timer > 0) {
     data.timer = data.timer - 1;
   }
 
