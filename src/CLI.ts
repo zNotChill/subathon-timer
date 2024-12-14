@@ -3,7 +3,7 @@
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
 import { dataManager, subathonManager, twitchManager } from "./Manager.ts";
-import { server } from "./Server.ts";
+import { server, setAuthOverride } from "./Server.ts";
 import { DataManager } from "./Data.ts";
 import { Log } from "./Logger.ts";
 
@@ -15,6 +15,7 @@ let backup_interval;
 
 const run = new cliffy.Command()
   .description("Run the services (server, Twitch API, etc).")
+  .option("-a, --auth-override", "Override the authentication process.")
   .action(async () => {
     dataManager.loadData();
     
@@ -27,6 +28,7 @@ const run = new cliffy.Command()
       }
     }
 
+    // setAuthOverride(!!options.auth_override);
     await server;
     // await watchConfig(); error: Uncaught (in promise) ReferenceError: Cannot access 'options' before initialization
 
@@ -52,23 +54,16 @@ const runSetup = async () => {
   appdata.first_run = false;
   dataManager.saveData();
 }
-  
+
 const { options } = await new cliffy.Command()
   .name("apricot")
   .version("0.1.0")
   .description("A CLI tool for managing your subathon.")
   .option("-c, --config <file:string>", "Path to the config file.", { default: "config.json" })
+  .option("-a", "Auth Override")
   .command("run", run) // Run the services (server, Twitch API, etc).
   .parse(Deno.args);
 
-async function watchConfig() {
-  const watcher = Deno.watchFs(options.config as string);
-  for await (const event of watcher) {
-    if (event.kind === "modify") {
-      Log("Config file modified. Reloading...", "Config");
-      DataManager.loadData();
-      config = DataManager.getConfig();
-      Log("Config reloaded.", "Config");
-    }
-  }
+if (options.authOverride) {
+  setAuthOverride(true);
 }

@@ -7,6 +7,7 @@ export class SubathonManager {
   data: Data;
   sessionHistory: Event[];
   globalMultiplier: number;
+  globalMultiplierCountdown: number;
 
   timer: number;
   donations: number;
@@ -32,6 +33,7 @@ export class SubathonManager {
       }
     ];
     this.globalMultiplier = 1;
+    this.globalMultiplierCountdown = 0;
 
     this.donations = 0;
     this.donation_goal = 0;
@@ -114,7 +116,7 @@ export class SubathonManager {
 
     this.sessionHistory.forEach(event => {
       if (event.donation && event.donation > 0)
-        donations += event.donation;
+        donations += event.donation * event.multiplier;
     });
 
     this.donations = donations;
@@ -283,6 +285,18 @@ export class SubathonManager {
     return this.data.subathon_config.donation_goals;
   }
 
+  isPaused() {
+    return this.timer_paused;
+  }
+
+  getGlobalMultiplierCountdown() {
+    return this.globalMultiplierCountdown;
+  }
+
+  setGlobalMultiplierCountdown(countdown: number) {
+    this.globalMultiplierCountdown = countdown;
+  }
+
   main() {
     Log("Subathon has started!", "SubathonManager");
 
@@ -303,6 +317,12 @@ export class SubathonManager {
       }
 
       this.timer -= 1;
+
+      if (this.globalMultiplierCountdown > 0) {
+        this.globalMultiplierCountdown -= 1;
+      } else if (this.globalMultiplierCountdown === 0) {
+        this.globalMultiplier = 1;
+      }
 
       // Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
     }, 1000);

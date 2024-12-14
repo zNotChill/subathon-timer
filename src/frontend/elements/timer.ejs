@@ -58,7 +58,6 @@ html {
   width: 25px;
   display: flex;
   justify-content: center;
-  
 }
 
 .notification-container {
@@ -116,6 +115,16 @@ html {
   z-index: 2;
   width: 100%;
   text-align: center;
+}
+
+.multiplier {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .next-goal {
@@ -204,6 +213,9 @@ html {
         <div class="current-goal">
           New emote
         </div>
+      </div>
+      <div class="multiplier">
+        <span class="multi chivo-mono tag-color">2x</span> rates
       </div>
     </div>
     <div class="next-goal">
@@ -324,6 +336,16 @@ function update() {
 
       animateProgressBar(data.donations, data.current_goal.goal, 1);
     });
+  });
+
+  document.querySelectorAll(".multiplier").forEach(multiplier => {
+    if (data.multiplier > 1) {
+      multiplier.style.display = "block";
+      multiplier.querySelector('.multi').innerText = `${data.multiplier}x`;
+      multiplier.style.color = "<%= data.options.text_color %>";
+    } else {
+      multiplier.style.display = "none";
+    }
   });
 
   next_goals.forEach(next_goal => {

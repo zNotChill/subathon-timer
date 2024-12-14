@@ -1,3 +1,4 @@
+import { BotManager } from "./Bot.ts";
 import { DataManager } from "./Data.ts";
 import { StorageManager } from "./Storage.ts";
 import { StreamlabsManager } from "./Streamlabs.ts";
@@ -11,3 +12,4 @@ export const subathonManager = new SubathonManager();
 export const twitchManager = new TwitchManager(subathonManager);
 export const streamlabsManager = new StreamlabsManager();
 export const storageManager = new StorageManager();
+export const botManager = new BotManager();

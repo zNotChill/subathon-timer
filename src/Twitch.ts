@@ -183,7 +183,6 @@ export class TwitchManager {
         Log(`Received session_welcome message. Subscribing to all events.`, "TwitchManager");
         
         this.subscribeToEvent(sessionId, "channel.cheer");
-        this.subscribeToEvent(sessionId, "channel.follow");
         this.subscribeToEvent(sessionId, "channel.subscribe");
         
         break;

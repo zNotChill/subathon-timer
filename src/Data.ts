@@ -34,7 +34,9 @@ export type Config = {
   },
   use_ngrok: boolean,
   backup_frequency: number,
-  verify_signature: boolean
+  verify_signature: boolean,
+  bot_prefix: string,
+  bot_authorized_users: string[],
 }
 
 export type AppData = {
@@ -82,7 +84,9 @@ export const globalData: Data = {
     },
     use_ngrok: true,
     backup_frequency: 60,
-    verify_signature: true
+    verify_signature: true,
+    bot_prefix: "!",
+    bot_authorized_users: []
   },
   app: {
     first_run: true,

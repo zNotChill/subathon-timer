@@ -2,7 +2,7 @@
 
 import { Context } from "jsr:@oak/oak/context";
 import { Log } from "./Logger.ts";
-import { dataManager, storageManager, streamlabsManager, subathonManager, twitchManager } from "./Manager.ts";
+import { botManager, dataManager, storageManager, streamlabsManager, subathonManager, twitchManager } from "./Manager.ts";
 import { NgrokManager } from "./Ngrok.ts";
 import { Application } from "jsr:@oak/oak/application";
 import { Router } from "jsr:@oak/oak/router";
@@ -19,6 +19,12 @@ const globalData = dataManager.getData();
 
 const ngrokManager = new NgrokManager();
 let https = "";
+
+export let authOverride: boolean = false;
+
+export function setAuthOverride(value: boolean) {
+  authOverride = value;
+}
 
 // authed middleware
 const authMiddleware = async (ctx: Context, next: Next) => {
@@ -298,7 +304,8 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
   if (
     await storageManager.get("access_token") &&
     await storageManager.get("refresh_token") &&
-    await storageManager.get("streamlabs_access_token")
+    await storageManager.get("streamlabs_access_token") &&
+    !authOverride
   ) {
     Log(`User logged in.`, "Server");
     Log(`Streamlabs user logged in.`, "Server");
@@ -313,8 +320,14 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
     await twitchManager.connectWebSocket();
     await streamlabsManager.main();
+
+    await botManager.start();
   } else {
     Log(`Waiting for user to log in at ${https}/streamlabs/login...`, "Server");
     Log(`Waiting for user to log in at ${https}/twitch/login...`, "Server");
+
+    for (let i = 0; i < 3; i++) {
+      Log(`Once you have logged in on both, restart the program.`, "Server");
+    }
   }
 });

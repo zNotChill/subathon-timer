@@ -28,7 +28,8 @@
     "npm:path-to-regexp@6.2.1": "6.2.1",
     "npm:socket.io-client@*": "4.8.1",
     "npm:socket.io-client@^4.8.1": "4.8.1",
-    "npm:socket.io@^4.8.1": "4.8.1"
+    "npm:socket.io@^4.8.1": "4.8.1",
+    "npm:tmi.js@^1.8.5": "1.8.5"
   },
   "jsr": {
     "@demin/ngrok-ts@0.0.5": {
@@ -475,6 +476,13 @@
         "has-flag"
       ]
     },
+    "tmi.js@1.8.5": {
+      "integrity": "sha512-A9qrydfe1e0VWM9MViVhhxVgvLpnk7pFShVUWePsSTtoi+A1X+Zjdoa7OJd7/YsgHXGj3GkNEvnWop/1WwZuew==",
+      "dependencies": [
+        "node-fetch",
+        "ws@8.18.0"
+      ]
+    },
     "tr46@0.0.3": {
       "integrity": "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="
     },
@@ -510,7 +518,8 @@
   "redirects": {
     "https://deno.land/x/dotenv/mod.ts": "https://deno.land/x/dotenv@v3.2.2/mod.ts",
     "https://deno.land/x/god_crypto/aes.ts": "https://deno.land/x/god_crypto@v1.4.11/aes.ts",
-    "https://deno.land/x/secret_store/mod.ts": "https://deno.land/x/secret_store@v0.1.1/mod.ts"
+    "https://deno.land/x/secret_store/mod.ts": "https://deno.land/x/secret_store@v0.1.1/mod.ts",
+    "https://deno.land/x/tmi/mod.ts": "https://deno.land/x/tmi@v1.0.6/mod.ts"
   },
   "remote": {
     "https://deno.land/std@0.118.0/async/deadline.ts": "1d6ac7aeaee22f75eb86e4e105d6161118aad7b41ae2dd14f4cfd3bf97472b93",
@@ -594,6 +603,8 @@
     "https://deno.land/std@0.150.0/log/levels.ts": "82c965b90f763b5313e7595d4ba78d5095a13646d18430ebaf547526131604d1",
     "https://deno.land/std@0.150.0/log/logger.ts": "4d25581bc02dfbe3ad7e8bb480e1f221793a85be5e056185a0cea134f7a7fdf4",
     "https://deno.land/std@0.150.0/log/mod.ts": "65d2702785714b8d41061426b5c279f11b3dcbc716f3eb5384372a430af63961",
+    "https://deno.land/std@0.64.0/async/delay.ts": "35957d585a6e3dd87706858fb1d6b551cb278271b03f52c5a2cb70e65e00c26a",
+    "https://deno.land/std@0.79.0/async/deferred.ts": "ecdb71319e164ec4ace5a44e3ee991b52c21bfc19e498acdf8eccdc0b1184f70",
     "https://deno.land/std@0.97.0/encoding/hex.ts": "f952e0727bddb3b2fd2e6889d104eacbd62e92091f540ebd6459317a61932d9b",
     "https://deno.land/x/dotenv@v3.2.2/mod.ts": "077b48773de9205266a0b44c3c3a3c3083449ed64bb0b6cc461b95720678d38e",
     "https://deno.land/x/dotenv@v3.2.2/util.ts": "693730877b13f8ead2b79b2aa31e2a0652862f7dc0c5f6d2f313f4d39c7b7670",
@@ -632,6 +643,15 @@
     "https://deno.land/x/socket_io@0.1.1/packages/socket.io/lib/server.ts": "c8814985a7cfa0dbad70a2daee6e6893f79b2027ddac7a3e7ba433f3c779944b",
     "https://deno.land/x/socket_io@0.1.1/packages/socket.io/lib/socket.ts": "950c6002fa48f31925badf3aa4dc0edc3d3bba9a6a1a15897c0209dce148f1e4",
     "https://deno.land/x/socket_io@0.1.1/packages/socket.io/mod.ts": "b91bcfaf55f45e45b9f5a779856d8c2a07543e7f3cc89c365ed636ee6742220a",
+    "https://deno.land/x/tmi@v1.0.6/lib/channel.ts": "392d4876d45ee732685741e758aace04dd470adae0814b4d87eedfa619c9f27b",
+    "https://deno.land/x/tmi@v1.0.6/lib/parser.ts": "d843c8f7d6c02d3a0ec000db013d7ddbee397c9e3e10b8ca18528dff46ebe732",
+    "https://deno.land/x/tmi@v1.0.6/lib/twitch_api.ts": "9801573e7f60991acfd6488bb356a6162381d01fdf18ea2b947dd921aca9010c",
+    "https://deno.land/x/tmi@v1.0.6/lib/twitch_api_types.ts": "6a12662804c2afe1ac56945b451cb059da2e87e4af342565d5444cebbe44dd2c",
+    "https://deno.land/x/tmi@v1.0.6/lib/twitch_chat.ts": "c14121f19877983599c9bf8b394aaab3f25aa2bbe1f9e5879593c336022c675a",
+    "https://deno.land/x/tmi@v1.0.6/lib/twitch_commands.ts": "6afaf34cec69d380da3c4c64d8ac617c398a6ed340d97166c37a67b7e0c91d6f",
+    "https://deno.land/x/tmi@v1.0.6/lib/twitch_data.ts": "9d767aa165da11798a736dfea4a89ea34f619c3e2f24224ebee881c214f5b06c",
+    "https://deno.land/x/tmi@v1.0.6/lib/util.ts": "9354b198494c1fe0ac74a4ddb7e6ed8b8d9520254ff5f1344b9c91c1f50d5037",
+    "https://deno.land/x/tmi@v1.0.6/mod.ts": "df11a15df5e80f09dd04768fbefac0ad904ceb3bb0539b2dd05180e0b8936e8d",
     "https://deno.land/x/typed_event_target@1.0.1/mod.ts": "99361353f5a923bce9299d531b7fb6d47dd81fb01e9cd2c42cdd5ff89ced45ee"
   },
   "workspace": {
@@ -644,7 +664,8 @@
       "npm:@twurple/eventsub-ws@^7.2.0",
       "npm:ejs@^3.1.10",
       "npm:socket.io-client@^4.8.1",
-      "npm:socket.io@^4.8.1"
+      "npm:socket.io@^4.8.1",
+      "npm:tmi.js@^1.8.5"
     ]
   }
 }

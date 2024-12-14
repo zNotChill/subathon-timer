@@ -104,8 +104,8 @@ export class StreamlabsManager {
     this.io.on("connect", () => {
       Log(`Connected to Streamlabs socket`, "StreamlabsManager");
 
-      Log(`Running test donation`, "StreamlabsManager");
-      this.testDonation(500).then(() => {});
+      // Log(`Running test donation`, "StreamlabsManager");
+      // this.testDonation(500).then(() => {});
     })
 
     this.io.on("event", (data: StreamlabsEvent) => {
