@@ -11,6 +11,7 @@ import { SubscriptionType } from "./EventSub.ts";
 export type EventType = SubscriptionType | 
   "config_change" |
   "donation" |
+  "raid" |
   "money_added" |
   "money_removed" |
   "time_added" |

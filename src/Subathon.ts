@@ -306,6 +306,38 @@ export class SubathonManager {
     this.globalMultiplierCountdown = countdown;
   }
 
+  addTimeToTimer(time: number) {
+    this.timer += time;
+    this.addEvent({
+      type: "time_added",
+      value: time,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: time,
+      donation: 0,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+    });
+  }
+
+  removeTimeFromTimer(time: number) {
+    this.timer -= time;
+    this.addEvent({
+      type: "time_removed",
+      value: time,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: time,
+      donation: 0,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+    });
+  }
+
   main() {
     Log("Subathon has started!", "SubathonManager");
 

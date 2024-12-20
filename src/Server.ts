@@ -33,6 +33,12 @@ const authMiddleware = async (ctx: Context, next: Next) => {
   let access_token = await cookies.get("access_token");
   const refresh_token = await cookies.get("refresh_token");
 
+  if (!access_token && !refresh_token) {
+    ctx.response.status = 401;
+    ctx.response.body = "Unauthorized";
+    return;
+  }
+
   // if the refresh token matches the current refresh token
   // but the access token doesn't, we need to set the access token to the new one
   if (access_token !== twitchManager.code_access_token && refresh_token === twitchManager.refresh_token) {
@@ -64,7 +70,7 @@ router.get("/streamlabs/login", (ctx) => {
   ctx.response.redirect(redirectUrl);
 });
 
-router.get("/twitch/callback", authMiddleware, async (ctx) => {
+router.get("/twitch/callback", async (ctx) => {
   const params = ctx.request.url.searchParams;
   const code = params.get("code");
   const error = params.get("error");
@@ -129,7 +135,7 @@ router.get("/twitch/callback", authMiddleware, async (ctx) => {
   ctx.response.body = "OK";
 });
 
-router.get("/streamlabs/callback", authMiddleware, async (ctx) => {
+router.get("/streamlabs/callback", async (ctx) => {
   const params = ctx.request.url.searchParams;
   const code = params.get("code");
   const error = params.get("error");
@@ -254,19 +260,19 @@ router.post("/eventsub", async (ctx) => {
 */
 
 function getPageCSS(files: string[]) {
-  const cssDir = `${import.meta.dirname}\\frontend\\css`;
+  const cssDir = `${import.meta.dirname}//frontend//css`;
   const cssFiles = files.map((file) => {
-    return Deno.readTextFileSync(`${cssDir}\\${file}`);
+    return Deno.readTextFileSync(`${cssDir}//${file}`);
   });
 
   return cssFiles.join("\n");
 }
 
 function getPageJS(files: string[]) {
-  const jsDir = `${import.meta.dirname}\\frontend\\js`;
+  const jsDir = `${import.meta.dirname}//frontend//js`;
   
   const jsFiles = files.map((file) => {
-    return Deno.readTextFileSync(`${jsDir}\\${file}`);
+    return Deno.readTextFileSync(`${jsDir}//${file}`);
   });
 
   return jsFiles.join("\n");
@@ -285,7 +291,7 @@ router.get("/settings", authMiddleware, async (ctx) => {
     authenticated: true,
   };
 
-  const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\settings.ejs`, data);
+  const html = await ejs.renderFile(`${import.meta.dirname}//frontend//settings.ejs`, data);
   ctx.response.body = html;
 });
 
@@ -306,7 +312,7 @@ router.get("/commands", async (ctx) => {
     }
   };
 
-  const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\commands.ejs`, data);
+  const html = await ejs.renderFile(`${import.meta.dirname}//frontend//commands.ejs`, data);
   ctx.response.body = html;
 })
 
@@ -317,12 +323,12 @@ router.get("/commands", async (ctx) => {
 router.get("/element", async (ctx) => {
   const element = ctx.request.url.searchParams.get("s");;
   
-  // check {import.meta.dirname}\\frontend\\elements\\${element}.globalData.config.json
+  // check {import.meta.dirname}//frontend//elements//${element}.globalData.config.json
   // if it exists, render the element
   // else, return 404
   
-  const elementConfig = preventBacktrack(`${import.meta.dirname}\\frontend\\elements\\${element}.config.json`);
-  const elementRender = preventBacktrack(`${import.meta.dirname}\\frontend\\elements\\${element}.ejs`);
+  const elementConfig = preventBacktrack(`${import.meta.dirname}//frontend//elements//${element}.config.json`);
+  const elementRender = preventBacktrack(`${import.meta.dirname}//frontend//elements//${element}.ejs`);
   let data = {};
   
   try {

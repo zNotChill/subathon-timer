@@ -2,6 +2,7 @@ import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
 import { dataManager, storageManager } from "./Manager.ts";
 import { Log } from "./Logger.ts";
 import { RateChangeCommand } from "./bot/commands/Rate.ts";
+import { AddTimeCommand } from "./bot/commands/AddTime.ts";
 
 export class BotManager {
   channel: Channel | undefined;
@@ -67,3 +68,4 @@ export interface Command {
 }
 
 commands.set(RateChangeCommand.name, RateChangeCommand);
+commands.set(AddTimeCommand.name, AddTimeCommand);

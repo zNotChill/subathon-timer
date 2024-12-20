@@ -129,6 +129,23 @@ export class StreamlabsManager {
           }
           break;
         }
+        case "raid": {
+          try {
+            subathonManager.getRewardFromTwitchEvent({
+              user_id: "0",
+              user_login: data.message[0].name,
+              user_name: data.message[0].name,
+              broadcaster_user_id: this.data.config.channel.id,
+              broadcaster_user_name: this.data.config.channel.name,
+              broadcaster_user_login: this.data.config.channel.name,
+              is_anonymous: true,
+              amount: data.message[0].raiders,
+            }, "raid");
+          } catch (error) {
+            Error(`Error while processing raid: ${error}`, "StreamlabsManager");
+          }
+          break;
+        }
       }
     });
   }

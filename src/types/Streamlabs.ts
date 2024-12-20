@@ -24,4 +24,5 @@ export type MessageData = {
   skip_alert: boolean,
   _id: string,
   priority: number,
+  raiders?: number,
 }
