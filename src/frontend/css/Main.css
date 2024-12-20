@@ -416,3 +416,29 @@ button.button-red {
   padding: 0 20px;
   user-select: none;
 }
+
+/* Tables */
+
+table {
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: var(--lighter);
+  color: var(--lighter-text);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+td {
+  background-color: var(--background-lighter);
+  color: white;
+  border-bottom: 1px solid var(--lighter);
+}

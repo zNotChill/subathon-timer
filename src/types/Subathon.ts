@@ -53,8 +53,10 @@ export type Event = {
   duration: number,
   donation: number,
   multiplier: number,
+  base_rate: number,
   user_id: string,
   user_name: string,
+  tier?: number,
 }
 
 export type DonationGoal = {

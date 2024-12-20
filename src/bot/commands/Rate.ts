@@ -4,7 +4,7 @@ import { subathonManager } from "../../Manager.ts";
 
 export const RateChangeCommand: Command = {
   name: "rate",
-  description: "Change the rate of the subathon events!",
+  description: "Change the value multiplier of subathon events.",
   usage: "rate <rate> <duration (mins)>",
   parameters: [
     {
@@ -15,9 +15,10 @@ export const RateChangeCommand: Command = {
     },
     {
       name: "duration",
-      description: "The duration to change the rate for.",
+      description: "The duration to change the rate for. In minutes.",
       type: "number",
-      required: false
+      required: false,
+      default: "5e30 (infinite)"
     }
   ],
   auth: true,

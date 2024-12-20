@@ -292,8 +292,6 @@ router.get("/settings", authMiddleware, async (ctx) => {
 router.get("/commands", async (ctx) => {
   const cookies = ctx.cookies;
   const access_token = await cookies.get("access_token");
-
-  console.log(access_token, twitchManager.code_access_token);
   
   const data = {
     user: twitchManager.code_user,
@@ -302,6 +300,10 @@ router.get("/commands", async (ctx) => {
     js: getPageJS(["Core.js", "Commands.js"]),
     access_token: access_token,
     authenticated: twitchManager.code_access_token === access_token,
+    commands: {
+      prefix: globalData.config.bot_prefix,
+      commands: Array.from(commands.values()),
+    }
   };
 
   const html = await ejs.renderFile(`${import.meta.dirname}\\frontend\\commands.ejs`, data);
@@ -374,8 +376,14 @@ router.get("/api/commands", (ctx) => {
   const commandsArray = Array.from(commands.values());
 
   ctx.response.status = 200;
-  ctx.response.body = commandsArray;
-})
+  ctx.response.body = {
+    prefix: globalData.config.bot_prefix,
+    commands: commandsArray,
+  };
+});
+
+router.post("/api/timer", async (ctx) => {
+});
 
 app.use(router.routes());
 app.listen({
@@ -428,11 +436,15 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
 
     await subathonManager.main();
     const refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
-    
+    const bot_refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("bot_refresh_token"));
+
     twitchManager.access_token = refresh_data.access_token;
     twitchManager.refresh_token = refresh_data.refresh_token;
     storageManager.set("access_token", refresh_data.access_token);
     storageManager.set("refresh_token", refresh_data.refresh_token);
+
+    storageManager.set("bot_access_token", bot_refresh_data.access_token);
+    storageManager.set("bot_refresh_token", bot_refresh_data.refresh_token);
     await dataManager.saveData();
     
     await twitchManager.connectWebSocket();

@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { dataManager, subathonManager, twitchManager } from "./Manager.ts";
+import { dataManager, storageManager, subathonManager, twitchManager } from "./Manager.ts";
 import { server, setAuthOverride } from "./Server.ts";
 import { DataManager } from "./Data.ts";
 import { Log } from "./Logger.ts";
@@ -55,6 +55,29 @@ const runSetup = async () => {
   dataManager.saveData();
 }
 
+const authInfo = new cliffy.Command()
+  .description("Prints the authentication information.")
+  .action(async () => {
+    let access_token = await storageManager.get("access_token");
+    let refresh_token = await storageManager.get("refresh_token");
+    let streamlabs_access_token = await storageManager.get("streamlabs_access_token");
+    let bot_access_token = await storageManager.get("bot_access_token");
+    let bot_refresh_token = await storageManager.get("bot_refresh_token");
+    
+    console.log(`------------ CONFIG ------------`);
+    console.log(`Client ID: ${config.client.id}`);
+    console.log(`Client Secret: ${config.client.secret}`);
+    console.log(`Callback URL: ${config.client.callback_url}`);
+    console.log(`------------ AUTHENTICATION ------------`);
+    console.log(`Twitch Access Token: ${access_token}`);
+    console.log(`Twitch Refresh Token: ${refresh_token}`);
+    console.log(`Streamlabs Access Token: ${streamlabs_access_token}`);
+    console.log(`Streamlabs Refresh Token: *streamlabs doesn't need refreshing, token is permanent*`);
+    console.log(`Bot Access Token: ${bot_access_token}`);   
+    console.log(`Bot Refresh Token: ${bot_refresh_token}`);
+    process.exit(0);
+  });
+
 const { options } = await new cliffy.Command()
   .name("apricot")
   .version("0.1.0")
@@ -62,6 +85,7 @@ const { options } = await new cliffy.Command()
   .option("-c, --config <file:string>", "Path to the config file.", { default: "config.json" })
   .option("-a", "Auth Override")
   .command("run", run) // Run the services (server, Twitch API, etc).
+  .command("auth-info", authInfo) // Prints the authentication information
   .parse(Deno.args);
 
 if (options.authOverride) {

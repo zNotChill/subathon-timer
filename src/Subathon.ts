@@ -9,7 +9,10 @@ export class SubathonManager {
   globalMultiplier: number;
   globalMultiplierCountdown: number;
 
+  baseRate: number;
+
   timer: number;
+  uptime: number;
   donations: number;
   donation_goal: number;
   
@@ -19,6 +22,7 @@ export class SubathonManager {
   constructor() {
     this.data = dataManager.getData();
     this.timer = 600; // 10 mins by default, should this be configurable?
+    this.uptime = 0;
     this.sessionHistory = [
       {
         type: "time_added",
@@ -28,12 +32,14 @@ export class SubathonManager {
         duration: this.timer,
         donation: 0,
         multiplier: 1,
+        base_rate: 1,
         user_id: "",
         user_name: "",
       }
     ];
     this.globalMultiplier = 1;
     this.globalMultiplierCountdown = 0;
+    this.baseRate = 1;
 
     this.donations = 0;
     this.donation_goal = 0;
@@ -88,7 +94,7 @@ export class SubathonManager {
         eventValue = event.bits ?? 0;
         break;
       case "channel.subscribe":
-        eventValue = 1;
+        eventValue = event.tier ?? 0;
         break;
       case "donation":
         eventValue = event.amount ?? 0;
@@ -98,14 +104,11 @@ export class SubathonManager {
     return eventValue;
   }
 
-  // This method is way easier than relying on a timer
-  // and it's more accurate. It also allows for more
-  // flexibility in the future.
   setTimerFromHistory() {
     let duration = 0;
 
     this.sessionHistory.forEach(event => {
-      duration += event.duration * event.multiplier;
+      duration += event.duration * event.multiplier * event.base_rate;
     });
 
     this.timer = duration;
@@ -116,7 +119,7 @@ export class SubathonManager {
 
     this.sessionHistory.forEach(event => {
       if (event.donation && event.donation > 0)
-        donations += event.donation * event.multiplier;
+        donations += event.donation * event.multiplier * event.base_rate;
     });
 
     this.donations = donations;
@@ -174,8 +177,10 @@ export class SubathonManager {
       duration: durationValue,
       donation: donationValue,
       multiplier: this.globalMultiplier,
+      base_rate: this.baseRate,
       user_id: event.user_id,
       user_name: event.user_name,
+      tier: event.tier || 0,
     });
 
     this.setTimerFromHistory();
@@ -210,6 +215,7 @@ export class SubathonManager {
       duration: 0,
       donation: 0,
       multiplier: 1,
+      base_rate: 1,
       user_id: "",
       user_name: "",
     });
@@ -230,6 +236,7 @@ export class SubathonManager {
       duration: time_paused,
       donation: 0,
       multiplier: 1,
+      base_rate: 1,
       user_id: "",
       user_name: "",
     });
@@ -242,6 +249,7 @@ export class SubathonManager {
       timer: this.timer,
       multiplier: this.globalMultiplier,
       multiplier_countdown: this.globalMultiplierCountdown,
+      base_rate: this.baseRate,
       currency: this.data.subathon_config.currency,
       rates: this.data.subathon_config.rates,
       paused: this.timer_paused,
@@ -306,24 +314,25 @@ export class SubathonManager {
 
     // Start the timer
     const interval = setInterval(() => {
-      if (this.timer_paused) {
-        return;
+      if (!this.timer_paused) {
+        if (this.timer <= 0) {
+          Log("Subathon has ended!", "SubathonManager");
+          this.timer = 0;
+          clearInterval(interval);
+          return;
+        }
+
+        this.timer -= 1;
+
+        if (this.globalMultiplierCountdown > 0) {
+          this.globalMultiplierCountdown -= 1;
+        } else if (this.globalMultiplierCountdown === 0) {
+          this.globalMultiplier = 1;
+        }
+
+        this.uptime += 1;
       }
 
-      if (this.timer <= 0) {
-        Log("Subathon has ended!", "SubathonManager");
-        this.timer = 0;
-        clearInterval(interval);
-        return;
-      }
-
-      this.timer -= 1;
-
-      if (this.globalMultiplierCountdown > 0) {
-        this.globalMultiplierCountdown -= 1;
-      } else if (this.globalMultiplierCountdown === 0) {
-        this.globalMultiplier = 1;
-      }
 
       // Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
     }, 1000);

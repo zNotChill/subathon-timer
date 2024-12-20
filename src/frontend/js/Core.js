@@ -15,3 +15,9 @@ function setOptionActive(option, active) {
     currentlyActiveOption = null;
   }
 }
+
+function purify(html) {
+  return html
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}

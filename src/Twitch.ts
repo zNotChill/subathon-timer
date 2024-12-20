@@ -286,6 +286,20 @@ export class TwitchManager {
     return signature === `sha256=${hmac}`;
   }
 
+  async getStreamInfo() {
+    const response = await fetch(`https://api.twitch.tv/helix/streams?user_id=${this.data.config.channel.id}`, {
+      headers: {
+        "Client-ID": this.data.config.client.id,
+        "Authorization": `Bearer ${this.access_token}`
+      }
+    });
+
+    const data = await response.json();
+    console.log(data);
+    
+    return data;
+  }
+
   async main() {
     await this.getAccessToken();
     await this.validateToken(this.access_token);

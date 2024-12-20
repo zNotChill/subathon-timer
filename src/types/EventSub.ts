@@ -88,7 +88,7 @@ export type MessageEvent = {
   message?: string,
   bits?: number,
   followed_at?: string,
-  tier?: string,
+  tier?: number,
   is_gift?: boolean,
   amount?: number,
 }

@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Commands</title>
 </head>
+<script>
+let commands = <%- JSON.stringify(commands) %>;
+</script>
 <body class="commands_page">
   <div class="sidebar">
     <div class="sidebar-top">
@@ -26,7 +29,16 @@
       </a>
     </div>
   </div>
-  <div class="commands settings-container"></div>
+  <table class="commands settings-container">
+    <tbody class="table-data">
+      <tr>
+        <th>Command</th>
+        <th>Description</th>
+        <th>Usage</th>
+        <th>Auth?</th>
+      </tr>
+    </tbody>
+  </table>
   <div class="footer">
     <div class="footer-text">
       Made with ❤️ by <a href="https://github.com/zNotChill/subathon-timer" target="_blank">zNotChill</a>. &copy; 2024

@@ -1,35 +1,79 @@
 
 setOptionActive("commands", true);
+const prefix = commands.prefix;
 
-let commands = {};
-
-fetch("/api/commands")
-  .then((response) => response.json())
-  .then((data) => {
-    commands = data;
-    renderCommands();
-  });
+const crossIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"><path d="M18 6l-12 12"></path><path d="M6 6l12 12"></path></svg>`;
+const tickIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"><path d="M5 12l5 5l10 -10"></path></svg>`;
 
 function renderCommands() {
-  const commandSection = document.querySelector(".commands");
-  commandSection.innerHTML = "";
+  const tableData = document.querySelector(".table-data");
 
-  Object.keys(commands).forEach((command) => {
-    const commandContainer = document.createElement("div");
-    commandContainer.classList.add("command");
+  const header = [
+    "<tr>",
+      "<th>Command</th>",
+      "<th>Description</th>",
+      "<th>Usage</th>",
+      "<th>Auth?</th>",
+    "</tr>",
+  ].join("");
 
-    const commandName = document.createElement("h3");
-    commandName.textContent = command.name;
+  tableData.innerHTML = header;
+
+  Object.keys(commands.commands).forEach((command) => {
+    const cmd = commands.commands[command];
+
+    const commandContainer = document.createElement("tr");
+
+    const commandName = document.createElement("td");
+    commandName.textContent = prefix + cmd.name;
     commandContainer.appendChild(commandName);
 
-    const commandDescription = document.createElement("p");
-    commandDescription.textContent = commands[command].description;
+    const commandDescription = document.createElement("td");
+    commandDescription.textContent = cmd.description;
     commandContainer.appendChild(commandDescription);
 
-    const commandUsage = document.createElement("p");
-    commandUsage.textContent = `Usage: ${commands[command].usage}`;
-    commandContainer.appendChild(commandUsage);
+    const commandUsage = document.createElement("td");
+    const paramLayout = "<{NAME}{REQUIRED} = {DEFAULT}>";
 
-    commandSection.appendChild(commandContainer);
+    commandUsage.innerHTML = `${prefix}${cmd.name} ` + cmd.parameters.map((param) => {
+      const element = document.createElement("span");
+      element.classList.add("command-param");
+
+      const name = document.createElement("span");
+      name.textContent = paramLayout
+        .replace("{NAME}", param.name)
+        .replace("{REQUIRED}", param.required ? "" : "?")
+        .replace(" = {DEFAULT}", param.default ? `(${param.default})` : "");
+        
+      console.log("adding event listeners");
+      
+      element.addEventListener("mouseover", () => {
+        console.log("showing tooltip");
+        
+        showTooltip(param.description, element);
+      });
+        
+      element.addEventListener("mouseout", () => {
+        if (currentTooltip) {
+          currentTooltip.remove();
+        }
+      });
+      
+      element.appendChild(name);
+
+      return element.outerHTML;
+    }).join(" ");
+    
+    commandContainer.appendChild(commandUsage);
+    
+    const commandAuth = document.createElement("td");
+    const iconContainer = document.createElement("icon");
+    iconContainer.innerHTML = cmd.auth ? tickIcon : crossIcon;
+    commandAuth.appendChild(iconContainer);
+    commandContainer.appendChild(commandAuth);
+
+    tableData.appendChild(commandContainer);
   });
 }
+
+renderCommands();

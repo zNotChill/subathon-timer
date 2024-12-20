@@ -59,7 +59,8 @@ export interface Command {
     name: string;
     description: string;
     type: "string" | "number" | "boolean";
-    required: boolean
+    required: boolean,
+    default?: string;
   }[];
   auth: boolean;
   execute: (args: string[], channel: Channel, user: string) => void;
