@@ -1,26 +1,24 @@
 # apricot
 
 # TODO
-<!-- - set up eventsub -->
-<!-- - add configs -->
-- add commands
-- web views (timer + counter)
-<!-- - track donations and channel events (bits, raids,) -->
+- add saving to settings page
+- page of completed goals
+- save data if program crashes
 
 # Setup
 
 This setup has only been tested on Windows 11.
 
 1. Install Deno v2.1.4 for Windows
-Install Deno from [the website](https://deno.com/) or use this command in PowerShell:
-
-```
-irm https://deno.land/install.ps1 | iex
-```
+Install Deno from [the website](https://deno.com/)
 
 2. Run the install script in Command Prompt
 ```
 .\init.bat
+```
+or:
+```
+.\init.sh
 ```
 
 This script will install the global Deno command `apricot`.
@@ -29,16 +27,6 @@ This script will install the global Deno command `apricot`.
 
 This step can be skipped if you are using a server.
 This step uses Command Prompt.
-
-### Install Chocolatey
-```
-.\choco.bat
-```
-
-### Install Ngrok
-```
-choco install ngrok
-```
 
 ### Make a Ngrok account
 
