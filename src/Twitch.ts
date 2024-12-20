@@ -127,6 +127,19 @@ export class TwitchManager {
     return data;
   }
 
+  async getUserInfoFromName(name: string) {
+    const response = await fetch(`https://api.twitch.tv/helix/users?login=${name}`, {
+      headers: {
+        "Client-ID": this.data.config.client.id,
+        "Authorization": `Bearer ${this.access_token}`
+      }
+    });
+
+    const data = await response.json();
+
+    return data;
+  }
+
   connectWebSocket() {
     Log(`Connecting to EventSub WebSocket.`, "TwitchManager");
 

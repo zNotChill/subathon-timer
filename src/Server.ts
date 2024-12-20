@@ -1,5 +1,3 @@
-
-
 import { Context } from "jsr:@oak/oak/context";
 import { Log } from "./Logger.ts";
 import { botManager, dataManager, storageManager, streamlabsManager, subathonManager, twitchManager } from "./Manager.ts";
@@ -10,6 +8,8 @@ import { Next } from "jsr:@oak/oak/middleware";
 import ejs from "npm:ejs";
 import { preventBacktrack } from "./utils/Path.ts";
 import { commands } from "./Bot.ts";
+import { config } from "https://deno.land/x/dotenv@v3.2.2/mod.ts";
+import { join } from "https://deno.land/std@0.224.0/path/mod.ts";
 
 const app = new Application;
 
@@ -20,6 +20,14 @@ const globalData = dataManager.getData();
 
 const ngrokManager = new NgrokManager();
 let https = "";
+
+const env = config();
+export let useAdminKey = false;
+export const adminKey = env.ADMIN_KEY;
+
+if (adminKey && adminKey.length > 0) {
+  useAdminKey = true;
+}
 
 export let authOverride: boolean = false;
 
@@ -32,6 +40,11 @@ const authMiddleware = async (ctx: Context, next: Next) => {
   const cookies = ctx.cookies;
   let access_token = await cookies.get("access_token");
   const refresh_token = await cookies.get("refresh_token");
+  const admin_key = await cookies.get("admin_key");
+
+  if (admin_key === adminKey) {
+    return next();
+  }
 
   if (!access_token && !refresh_token) {
     ctx.response.status = 401;
@@ -54,6 +67,26 @@ const authMiddleware = async (ctx: Context, next: Next) => {
 
   return next();
 };
+
+async function isAuthenticated(ctx: Context) {
+  const cookies = ctx.cookies;
+  const access_token = await cookies.get("access_token");
+  const refresh_token = await cookies.get("refresh_token");
+  const admin_key = await cookies.get("admin_key");
+
+  if (admin_key === adminKey) {
+    return true;
+  }
+
+  if (!access_token && !refresh_token) {
+    return false;
+  }
+  if (access_token !== twitchManager.code_access_token && twitchManager.user_logged_in) {
+    return false;
+  }
+
+  return true;
+}
 
 router.get("/twitch/login", (ctx) => {
   const redirectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${globalData.config.client.id}&redirect_uri=${globalData.config.client.callback_url}&response_type=code&scope=${globalData.config.client.scopes.join("%20")}`;
@@ -238,7 +271,7 @@ router.get("/twitch/bot/callback", async (ctx) => {
   ctx.response.body = "OK";
 });
 
-router.post("/eventsub", async (ctx) => {
+router.post("/eventsub", authMiddleware, async (ctx) => {
   if(!twitchManager.user_logged_in) return;
   const body = await ctx.request.body.json();
   const signature = ctx.request.headers.get("Twitch-Eventsub-Message-Signature") || "";
@@ -260,19 +293,19 @@ router.post("/eventsub", async (ctx) => {
 */
 
 function getPageCSS(files: string[]) {
-  const cssDir = `${import.meta.dirname}//frontend//css`;
+  const cssDir = join(import.meta.dirname || "", "frontend", "css");
   const cssFiles = files.map((file) => {
-    return Deno.readTextFileSync(`${cssDir}//${file}`);
+    return Deno.readTextFileSync(join(cssDir, file));
   });
 
   return cssFiles.join("\n");
 }
 
 function getPageJS(files: string[]) {
-  const jsDir = `${import.meta.dirname}//frontend//js`;
+  const jsDir = join(import.meta.dirname || "", "frontend", "js");
   
   const jsFiles = files.map((file) => {
-    return Deno.readTextFileSync(`${jsDir}//${file}`);
+    return Deno.readTextFileSync(join(jsDir, file));
   });
 
   return jsFiles.join("\n");
@@ -305,7 +338,7 @@ router.get("/commands", async (ctx) => {
     css: getPageCSS(["Main.css"]),
     js: getPageJS(["Core.js", "Commands.js"]),
     access_token: access_token,
-    authenticated: twitchManager.code_access_token === access_token,
+    authenticated: await isAuthenticated(ctx),
     commands: {
       prefix: globalData.config.bot_prefix,
       commands: Array.from(commands.values()),
@@ -388,9 +421,6 @@ router.get("/api/commands", (ctx) => {
   };
 });
 
-router.post("/api/timer", async (ctx) => {
-});
-
 app.use(router.routes());
 app.listen({
   port: globalData.config.port,
@@ -444,6 +474,7 @@ app.addEventListener("listen", async ({ hostname, port, secure }) => {
     const refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
     const bot_refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("bot_refresh_token"));
 
+    Log(`Access tokens refreshed.`, "Server");
     twitchManager.access_token = refresh_data.access_token;
     twitchManager.refresh_token = refresh_data.refresh_token;
     storageManager.set("access_token", refresh_data.access_token);

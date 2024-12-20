@@ -94,10 +94,13 @@ export class SubathonManager {
         eventValue = event.bits ?? 0;
         break;
       case "channel.subscribe":
-        eventValue = event.tier ?? 0;
+        eventValue = (event.tier ?? 1) / 1000;
         break;
       case "donation":
         eventValue = event.amount ?? 0;
+        break;
+      case "channel.raid":
+        eventValue = event.viewers ?? 0;
         break;
     }
 
@@ -147,10 +150,10 @@ export class SubathonManager {
       }
     });
 
-    // Log(`Used rate: ${usedRate.type} with value ${usedRate.value} and duration ${usedRate.duration}`, "SubathonManager");
+    Log(`Used rate: ${usedRate.type} with value ${usedRate.value} and duration ${usedRate.duration}`, "SubathonManager");
     
     let durationValue = usedRate.duration;
-    let donationValue = eventValue;
+    let donationValue = 0;
 
     if (usedRate.multiply && usedRate.adaptive_value && usedRate.donation_value) {
       durationValue *= eventValue * usedRate.adaptive_value;
@@ -165,6 +168,7 @@ export class SubathonManager {
     }
 
     if (usedRate.adaptive && usedRate.donation_value) {
+      donationValue = eventValue;
       const extraDonation = Math.floor(eventValue * usedRate.donation_value);
       donationValue = extraDonation;
     }
@@ -179,8 +183,7 @@ export class SubathonManager {
       multiplier: this.globalMultiplier,
       base_rate: this.baseRate,
       user_id: event.user_id,
-      user_name: event.user_name,
-      tier: event.tier || 0,
+      user_name: event.user_name
     });
 
     this.setTimerFromHistory();
@@ -266,6 +269,13 @@ export class SubathonManager {
         title: "No goals yet!"
       },
       goals: this.getGoals(),
+      uptime_goals: this.getUptimeGoals(),
+      current_uptime_goal: this.getCurrentUptimeGoal(),
+      next_uptime_goal: this.getUptimeGoal(this.getNextUptimeGoal().index + 1) || {
+        goal: 0,
+        title: "No more goals!"
+      },
+      uptime: this.uptime
     }
   }
 
@@ -288,6 +298,35 @@ export class SubathonManager {
 
   getDonationGoal(index: number) {
     return this.data.subathon_config.donation_goals[index];
+  }
+
+  getNextUptimeGoal() {
+    let nextGoal = this.data.subathon_config.uptime_goals[0];
+
+    let nextGoalIndex = 0;
+    this.data.subathon_config.uptime_goals.forEach(goal => {
+      if (this.uptime >= goal.goal) {
+        nextGoal = this.data.subathon_config.uptime_goals[nextGoalIndex + 1];
+        nextGoalIndex++;
+      }
+    });
+
+    return {
+      goal: nextGoal,
+      index: nextGoalIndex,
+    };
+  }
+
+  getUptimeGoal(index: number) {
+    return this.data.subathon_config.uptime_goals[index];
+  }
+
+  getCurrentUptimeGoal() {
+    return this.getNextUptimeGoal().goal;
+  }
+
+  getUptimeGoals() {
+    return this.data.subathon_config.uptime_goals;
   }
 
   getGoals() {

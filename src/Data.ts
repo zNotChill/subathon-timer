@@ -42,6 +42,7 @@ export type Config = {
   verify_signature: boolean,
   bot_prefix: string,
   bot_authorized_users: string[],
+  page_url: string,
 }
 
 export type AppData = {
@@ -54,8 +55,8 @@ export const globalData: Data = {
     client: {
       id: "client_id",
       secret: "client_secret",
-      callback_url: `{NGROK_URL}/twitch/callback`,
-      bot_callback_url: `{NGROK_URL}/twitch/bot/callback`,
+      callback_url: `{URL}/twitch/callback`,
+      bot_callback_url: `{URL}/twitch/bot/callback`,
       scopes: [
         "channel:read:redemptions",
         "channel:manage:redemptions",
@@ -66,7 +67,7 @@ export const globalData: Data = {
     streamlabs_client: {
       id: "streamlabs_client_id",
       secret: "streamlabs_client_secret",
-      callback_url: `{NGROK_URL}/streamlabs/callback`,
+      callback_url: `{URL}/streamlabs/callback`,
       scopes: [
         "donations.read",
         "donations.create",
@@ -78,7 +79,7 @@ export const globalData: Data = {
     port: 4450,
     api_base: "https://api.twitch.tv/helix",
     eventsub_url: "https://api.twitch.tv/helix/eventsub/subscriptions",
-    eventsub_callback: "{NGROK_URL}/eventsub",
+    eventsub_callback: "{URL}/eventsub",
     secret_key: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     channel: {
       name: "channel_name",
@@ -96,51 +97,19 @@ export const globalData: Data = {
     backup_frequency: 60,
     verify_signature: true,
     bot_prefix: "!",
-    bot_authorized_users: []
+    bot_authorized_users: [],
+    page_url: "https://www.example.com"
   },
   app: {
     first_run: true,
     ngrok_url: ""
   },
   subathon_config: {
-    rates: [
-      {
-        duration: 4,
-        type: "donation",
-        value: 1,
-        adaptive: true
-      },
-      {
-        duration: 4,
-        type: "channel.cheer",
-        value: 100,
-        adaptive: true
-      },
-      {
-        duration: 8,
-        type: "channel.cheer",
-        value: 200,
-        adaptive: true
-      },
-      {
-        duration: 15,
-        type: "channel.subscribe",
-        value: 1
-      },
-      {
-        duration: 30,
-        type: "channel.subscribe",
-        value: 2
-      },
-      {
-        duration: 60,
-        type: "channel.subscribe",
-        value: 3
-      },
-    ],
+    rates: [],
     currency: "EUR",
     history: [],
     donation_goals: [],
+    uptime_goals: []
   }
 }
 

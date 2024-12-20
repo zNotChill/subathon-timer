@@ -91,6 +91,7 @@ export type MessageEvent = {
   tier?: number,
   is_gift?: boolean,
   amount?: number,
+  viewers?: number,
 }
 
 export type DescribedSubscriptionType = {

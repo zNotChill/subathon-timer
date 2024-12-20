@@ -44,6 +44,7 @@ export type SubathonData = {
   currency: string, // no validation for now, I do not want to type out all the currencies
   history: Event[],
   donation_goals: DonationGoal[],
+  uptime_goals: UptimeGoal[],
 }
 
 export type Event = {
@@ -61,6 +62,11 @@ export type Event = {
 }
 
 export type DonationGoal = {
+  goal: number,
+  title: string,
+}
+
+export type UptimeGoal = {
   goal: number,
   title: string,
 }

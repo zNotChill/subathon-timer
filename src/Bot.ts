@@ -1,8 +1,14 @@
-import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
+import { TwitchChat, Channel } from "https://deno.land/x/tmi@v1.0.6/mod.ts";
 import { dataManager, storageManager } from "./Manager.ts";
 import { Log } from "./Logger.ts";
 import { RateChangeCommand } from "./bot/commands/Rate.ts";
 import { AddTimeCommand } from "./bot/commands/AddTime.ts";
+import { SetBaseRateCommand } from "./bot/commands/SetBaseRate.ts";
+import { RatesCommand } from "./bot/commands/Rates.ts";
+import { PauseTimerCommand } from "./bot/commands/PauseTimer.ts";
+import { ResumeTimerCommand } from "./bot/commands/ResumeTimer.ts";
+import { AddAuthUserCommand } from "./bot/commands/AddAuthUser.ts";
+import { RemoveAuthUserCommand } from "./bot/commands/RemoveAuthUser.ts";
 
 export class BotManager {
   channel: Channel | undefined;
@@ -40,6 +46,20 @@ export class BotManager {
       commandFunction?.execute(message.split(" ").slice(1), this.channel as Channel, event.username);
     });
   }
+
+  addAuthedUser(user: string) {
+    dataManager.getConfig().bot_authorized_users.push(user);
+    dataManager.saveData();
+  }
+
+  removeAuthedUser(user: string) {
+    dataManager.getConfig().bot_authorized_users = dataManager.getConfig().bot_authorized_users.filter((u) => u !== user);
+    dataManager.saveData();
+  }
+
+  isUserAuthed(user: string) {
+    return dataManager.getConfig().bot_authorized_users.includes(user);
+  }
 }
 
 export const commands = new Map<string, Command>();
@@ -69,3 +89,9 @@ export interface Command {
 
 commands.set(RateChangeCommand.name, RateChangeCommand);
 commands.set(AddTimeCommand.name, AddTimeCommand);
+commands.set(SetBaseRateCommand.name, SetBaseRateCommand);
+commands.set(RatesCommand.name, RatesCommand);
+commands.set(PauseTimerCommand.name, PauseTimerCommand);
+commands.set(ResumeTimerCommand.name, ResumeTimerCommand);
+commands.set(AddAuthUserCommand.name, AddAuthUserCommand);
+commands.set(RemoveAuthUserCommand.name, RemoveAuthUserCommand);

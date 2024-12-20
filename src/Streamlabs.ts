@@ -39,7 +39,7 @@ export class StreamlabsManager {
       });
   
       const data = await response.json();
-      
+
       this.access_token = data.access_token;
       return data;
     } catch (error) {
@@ -140,7 +140,7 @@ export class StreamlabsManager {
               broadcaster_user_login: this.data.config.channel.name,
               is_anonymous: true,
               amount: data.message[0].raiders,
-            }, "raid");
+            }, "channel.raid");
           } catch (error) {
             Error(`Error while processing raid: ${error}`, "StreamlabsManager");
           }

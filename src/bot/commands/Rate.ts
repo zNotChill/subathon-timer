@@ -24,14 +24,14 @@ export const RateChangeCommand: Command = {
   auth: true,
   execute: (args: string[], channel: Channel, user: string) => {
     if (args.length === 0) {
-      channel.send(`@${user}, please provide a rate.`);
+      channel.send(`@${user}: please provide a rate.`);
       return;
     }
     
     let rate: number | string = args[0];
 
     if (isNaN(parseFloat(rate))) {
-      channel.send(`@${user}, please provide a valid rate.`);
+      channel.send(`@${user}: please provide a valid rate.`);
       return;
     }
 
@@ -42,18 +42,18 @@ export const RateChangeCommand: Command = {
     }
 
     if (subathonManager.isPaused()) {
-      channel.send(`@${user}, the subathon is paused.`);
+      channel.send(`@${user}: the subathon is paused.`);
       return;
     }
 
     rate = parseFloat(rate);
     // if (subathonManager.globalMultiplier === rate) {
-    //   channel.send(`@${user}, rate is already set to ${rate}.`);
+    //   channel.send(`@${user}: rate is already set to ${rate}.`);
     //   return;
     // }
 
     subathonManager.globalMultiplier = rate;
     subathonManager.globalMultiplierCountdown = parseFloat(duration.toString()) * 60;
-    channel.send(`@${user}, changing rate to ${rate}x for ${duration} minutes.`);
+    channel.send(`@${user}: changing rate to ${rate}x for ${duration} minutes.`);
   }
 }
