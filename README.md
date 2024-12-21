@@ -12,7 +12,7 @@ This setup has only been tested on Windows 11.
 1. Install Deno v2.1.4 for Windows
 Install Deno from [the website](https://deno.com/)
 
-2. Run the install script in Command Prompt
+2. Run the install script
 ```
 .\init.bat
 ```
