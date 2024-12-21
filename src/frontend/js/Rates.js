@@ -23,8 +23,6 @@ const currencies = {
 const currencySymbol = currencies[currency];
 
 rates.forEach((rate) => {
-  console.log(rate);
-  
   const rateContainer = document.createElement("div");
   rateContainer.classList.add("rate-container");
 
@@ -181,6 +179,13 @@ function convertSecondsToTimeStr(seconds) {
 
 const time_remaining_element = document.querySelector(".time_remaining");
 setInterval(() => {
+  if (subathonData.multiplier_countdown <= 0 && subathonData.multiplier > 1) {
+    time_remaining_element.textContent = `Multiplier expired`;
+    return;
+  } else if (subathonData.multiplier === 1) {
+    time_remaining_element.textContent = `Multiplier inactive (1x)`;
+    return;
+  }
   subathonData.multiplier_countdown--;
   time_remaining_element.textContent = `Time remaining of ${subathonData.multiplier}x multiplier: ${convertSecondsToTimeStr(subathonData.multiplier_countdown)}`;
 }, 1000);
