@@ -112,7 +112,6 @@ rates.forEach((rate) => {
       break;
   }
 
-
   rateSymbol.appendChild(symbolDiv);
   leftDiv.appendChild(rateSymbol);
   rateContainer.appendChild(leftDiv);
@@ -179,3 +178,8 @@ function convertSecondsToTimeStr(seconds) {
     return Math.floor(seconds / 60) + " mins";
   }
 }
+
+const time_remaining_element = document.querySelector(".time_remaining");
+setInterval(() => {
+  time_remaining_element.textContent = `Time remaining of ${subathonData.multiplier}x multiplier: ${convertSecondsToTimeStr(subathonData.multiplier_countdown)}`;
+}, 1000);
