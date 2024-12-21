@@ -32,6 +32,17 @@ if (top_time_adders.length < 10) {
   }
 }
 
+if (top_total.length < 10) {
+  for (let i = top_total.length; i < 10; i++) {
+    top_total.push({
+      username: "-",
+      score: 0,
+      duration: 0,
+      donation: 0
+    });
+  }
+}
+
 
 const currencySymbol = currencies[currency];
 
@@ -45,7 +56,7 @@ function renderLeaderboard(type) {
       <tr>
         <th>Placement</th>
         <th>Username</th>
-        <th>Total Money Contributed</th>
+        <th>Total Money Donated</th>
       </tr>
     `;
   } else if (type === "time") {
@@ -54,6 +65,16 @@ function renderLeaderboard(type) {
       <tr>
         <th>Placement</th>
         <th>Username</th>
+        <th>Total Time Contributed</th>
+      </tr>
+    `;
+  } else if (type === "all") {
+    data = top_donators.concat(top_time_adders).sort((a, b) => b[1] - a[1]);
+    tableHeaders = `
+      <tr>
+        <th>Placement</th>
+        <th>Username</th>
+        <th>Total Money Donated</th>
         <th>Total Time Contributed</th>
       </tr>
     `;
@@ -70,6 +91,45 @@ function renderLeaderboard(type) {
   table.innerHTML = tableHeaders;
 
   const tbody = document.querySelector("tbody");
+
+  if (type === "all") {
+    top_total.forEach((entry) => {
+      const entryContainer = document.createElement("tr");
+  
+      const placement = document.createElement("td");
+      const placementIndex = top_total.indexOf(entry) + 1;
+      
+      placement.classList.add("center");
+      placement.textContent = "#" + placementIndex;
+  
+      if (placementIndex === 1) {
+        placement.classList.add("gold");
+      } else if (placementIndex === 2) {
+        placement.classList.add("silver");
+      } else if (placementIndex === 3) {
+        placement.classList.add("brown");
+      } else {
+        placement.classList.add("dark");
+      }
+  
+      entryContainer.appendChild(placement);
+  
+      const username = document.createElement("td");
+      username.textContent = entry.username;
+      entryContainer.appendChild(username);
+  
+      const total = document.createElement("td");
+      total.textContent = entry.donation > 0 ? currencySymbol + formatNumber(entry.donation) : "-";
+      entryContainer.appendChild(total);
+
+      const totalTime = document.createElement("td");
+      totalTime.textContent = convertSecondsToTimeStr(entry.duration) || "-";
+      entryContainer.appendChild(totalTime);
+  
+      tbody.appendChild(entryContainer);
+    });
+    return;
+  }
 
   data.forEach((entry) => {
     const entryContainer = document.createElement("tr");
@@ -103,7 +163,7 @@ function renderLeaderboard(type) {
   });
 }
 
-renderLeaderboard("money");
+renderLeaderboard("all");
 
 function convertSecondsToTimeStr(seconds) {
   const hours = Math.floor(seconds / 3600);

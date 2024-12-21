@@ -264,6 +264,7 @@ export class DataManager {
     newData.config.secret_key = "";
     newData.config.client.secret = "";
     newData.config.streamlabs_client.secret = "";
+    newData.subathon_config.history = [];
 
     return newData;
   }

@@ -398,6 +398,7 @@ router.get("/leaderboard", async (ctx) => {
       authenticated: await isAuthenticated(ctx),
       top_donators: subathonManager.getTopDonatingUsers(),
       top_time_adders: subathonManager.getTopTimeAddingUsers(),
+      top_total: subathonManager.getTopTotalUsers(),
       currency: globalData.subathon_config.currency,
     };
   
@@ -470,6 +471,10 @@ router.get("/element", async (ctx) => {
 /*
   API
 */
+
+router.get("/", (ctx) => {
+  ctx.response.redirect("/rates");
+});
 
 router.get("/api/timer", (ctx) => {
   ctx.response.status = 200;

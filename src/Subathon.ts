@@ -495,14 +495,6 @@ export class SubathonManager {
     return this.sessionHistory.filter(event => event.user_name).slice(-count).reverse();
   }
 
-  getTopDonations(count: number = 10) {
-    return this.sessionHistory.filter(event => event.donation > 0 && event.user_name).slice(-count).reverse();
-  }
-
-  getTopTimeAdded(count: number = 10) {
-    return this.sessionHistory.filter(event => event.type === "time_added").slice(-count).reverse();
-  }
-
   getTopDonatingUsers(count: number = 10) {
     const users = this.sessionHistory.filter(event => event.donation > 0 && event.user_name).reduce((acc, event) => {
       if (acc[event.user_name]) {
@@ -529,6 +521,29 @@ export class SubathonManager {
     }, {} as Record<string, number>);
 
     return Object.entries(users).sort((a, b) => b[1] - a[1]).slice(0, count);
+  }
+
+  getTopTotalUsers(count: number = 10) {
+    const users = this.sessionHistory.filter(event => event.user_name).reduce((acc, event) => {
+      const total = event.donation + event.duration;
+
+      if (acc[event.user_name]) {
+        acc[event.user_name].score += total;
+        acc[event.user_name].donation += event.donation;
+        acc[event.user_name].duration += event.duration;
+      } else {
+        acc[event.user_name] = {
+          username: event.user_name,
+          score: total,
+          donation: event.donation,
+          duration: event.duration
+        };
+      }
+
+      return acc;
+    }, {} as Record<string, { username: string, score: number, donation: number, duration: number }>);
+
+    return Object.values(users).sort((a, b) => b.score - a.score).slice(0, count);
   }
 
   setData(data: Data) {

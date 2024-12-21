@@ -181,5 +181,6 @@ function convertSecondsToTimeStr(seconds) {
 
 const time_remaining_element = document.querySelector(".time_remaining");
 setInterval(() => {
+  subathonData.multiplier_countdown--;
   time_remaining_element.textContent = `Time remaining of ${subathonData.multiplier}x multiplier: ${convertSecondsToTimeStr(subathonData.multiplier_countdown)}`;
 }, 1000);
