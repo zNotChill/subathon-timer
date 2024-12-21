@@ -123,10 +123,22 @@ const configSettings = [
         }
       }
     ]
+  },
+  {
+    title: "Bot Settings",
+    options: [
+      {
+        text: "Authorized Users",
+        description: "The users that are authorized to use the bot.",
+        input: {
+          type: "multi_input",
+          value: data.config.bot_authorized_users,
+          disabled: true
+        }
+      }
+    ]
   }
 ]
-
-console.log(data);
 
 const subathonSettings = [
   {
@@ -206,6 +218,21 @@ function renderSettings(tab) {
         case "input": {
           const optionInput = document.createElement("input");
           optionInput.value = option.input.value;
+          optionInput.disabled = option.input.disabled;
+          optionInputContainer.appendChild(optionInput);
+          break;
+        }
+        case "time_input": {
+          const optionInput = document.createElement("input");
+          optionInput.value = option.input.value;
+          optionInput.disabled = option.input.disabled;
+          optionInput.type = "time";
+          optionInputContainer.appendChild(optionInput);
+          break;
+        }
+        case "multi_input": {
+          const optionInput = document.createElement("input");
+          optionInput.value = option.input.value.join(", ");
           optionInput.disabled = option.input.disabled;
           optionInputContainer.appendChild(optionInput);
           break;
