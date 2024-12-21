@@ -469,3 +469,36 @@ td {
 td.center {
   text-align: center;
 }
+
+/* i hate mobile */
+
+@media (max-width: 900px) {
+  .option_text #text {
+    display: none;
+  }
+
+  .sidebar {
+    width: 65px;
+  }
+
+  :root {
+    --sidebar-width: 65px;
+  }
+
+  .sidebar-splitter #text {
+    display: none;
+  }
+
+  td {
+    padding: 5px;
+    font-size: 0.9em;
+  }
+}
+
+/* auto font size below 600px */
+
+@media (max-width: 600px) {
+  tbody tr:nth-child(1) {
+    font-size: 0.8em;
+  }
+}

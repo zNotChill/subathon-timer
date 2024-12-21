@@ -22,6 +22,7 @@
     "npm:@twurple/auth@^7.2.0": "7.2.0",
     "npm:@twurple/eventsub-ws@^7.2.0": "7.2.0_@twurple+api@7.2.0__@twurple+auth@7.2.0_@twurple+auth@7.2.0",
     "npm:@types/node@*": "22.5.4",
+    "npm:chalk@^5.4.0": "5.4.0",
     "npm:e@*": "0.2.33",
     "npm:ejs@*": "3.1.10",
     "npm:ejs@^3.1.10": "3.1.10",
@@ -307,6 +308,9 @@
         "supports-color"
       ]
     },
+    "chalk@5.4.0": {
+      "integrity": "sha512-ZkD35Mx92acjB2yNJgziGqT9oKHEOxjTBTDRpOsRWtdecL/0jM3z5kM/CTzHWvHIen1GvkM85p6TuFfDGfc8/Q=="
+    },
     "color-convert@2.0.1": {
       "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
       "dependencies": [
@@ -385,7 +389,7 @@
       "integrity": "sha512-2P4SQ0HrLQ+fw6llpLnOaGAvN2Zu6778SJMrCUwns4fOoG9ayrTiZk3VV8sCPkVZF8ab0zksVpS8FDY5pRCNBA==",
       "dependencies": [
         "async",
-        "chalk",
+        "chalk@4.1.2",
         "filelist",
         "minimatch@3.1.2"
       ]
@@ -605,7 +609,14 @@
     "https://deno.land/std@0.150.0/log/mod.ts": "65d2702785714b8d41061426b5c279f11b3dcbc716f3eb5384372a430af63961",
     "https://deno.land/std@0.64.0/async/delay.ts": "35957d585a6e3dd87706858fb1d6b551cb278271b03f52c5a2cb70e65e00c26a",
     "https://deno.land/std@0.79.0/async/deferred.ts": "ecdb71319e164ec4ace5a44e3ee991b52c21bfc19e498acdf8eccdc0b1184f70",
+    "https://deno.land/std@0.94.0/node/tty.ts": "9fa7f7b461759774b4eeab00334ac5d25b69bf0de003c02814be01e65150da79",
     "https://deno.land/std@0.97.0/encoding/hex.ts": "f952e0727bddb3b2fd2e6889d104eacbd62e92091f540ebd6459317a61932d9b",
+    "https://deno.land/x/chalk_deno@v4.1.1-deno/source/ansi-styles/index.js": "7cc96ab93d1c9cfc0746e9dffb40be872e42ee242906f48e68df0d2c9669f737",
+    "https://deno.land/x/chalk_deno@v4.1.1-deno/source/has-flag/index.js": "aed21e4eba656057e7b8c6024305f5354d2ebee2adc857a1d8cd5207923de7e5",
+    "https://deno.land/x/chalk_deno@v4.1.1-deno/source/index.js": "6339123f32f7eb4b17c5c9c926ecdf3dbc353fd4fda7811ad2d3c1d4b98a7420",
+    "https://deno.land/x/chalk_deno@v4.1.1-deno/source/supports-color/index.js": "4d7f2d216b6ac9013d9ec7e004de21f5a7d00bf2be4075bab2d82638d0d41a86",
+    "https://deno.land/x/chalk_deno@v4.1.1-deno/source/templates.js": "f2e12be18cb84710e341e5499528280278052909fa74a12cefc9e2cc26a597ac",
+    "https://deno.land/x/chalk_deno@v4.1.1-deno/source/util.js": "cd08297ec411dcee91826ad01a00d3427235d4548ba605a59e64f0da83af8306",
     "https://deno.land/x/dotenv@v3.2.2/mod.ts": "077b48773de9205266a0b44c3c3a3c3083449ed64bb0b6cc461b95720678d38e",
     "https://deno.land/x/dotenv@v3.2.2/util.ts": "693730877b13f8ead2b79b2aa31e2a0652862f7dc0c5f6d2f313f4d39c7b7670",
     "https://deno.land/x/god_crypto@v1.4.11/aes.ts": "aeb7231d684cf8ca50b1ff1d12334f4f344e0009de0958f27a792edb18bf4729",
@@ -662,6 +673,7 @@
       "npm:@twurple/api@^7.2.0",
       "npm:@twurple/auth@^7.2.0",
       "npm:@twurple/eventsub-ws@^7.2.0",
+      "npm:chalk@^5.4.0",
       "npm:ejs@^3.1.10",
       "npm:socket.io-client@^4.8.1",
       "npm:socket.io@^4.8.1",

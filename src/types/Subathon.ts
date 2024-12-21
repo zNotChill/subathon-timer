@@ -29,14 +29,14 @@ export type Rate = {
   // actual amount of money/viewers gained from bits/donations/raids
   adaptive?: boolean,
   
-  // whether the duration should be multiplied by the amount of bits/donations/viewers gained.
-  // like adaptive, but simpler
-  multiply?: boolean,
+  // the operation that should be done on the value
+  // when the rate is adaptive
+  operation: "add" | "subtract" | "multiply" | "divide" | "set",
 
   // the amount of duration that should be added on top of the duration
   // per extra bit/donation/viewer gained
-  adaptive_value?: number,
-  donation_value?: number,
+  time_per: number,
+  money_per: number,
 }
 
 export type SubathonData = {

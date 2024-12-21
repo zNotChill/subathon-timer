@@ -155,23 +155,39 @@ export class SubathonManager {
     let durationValue = usedRate.duration;
     let donationValue = 0;
 
-    if (usedRate.multiply && usedRate.adaptive_value && usedRate.donation_value) {
-      durationValue *= eventValue * usedRate.adaptive_value;
-      donationValue = eventValue * usedRate.donation_value;
+    switch (usedRate.operation) {
+      case "add":
+        break;
+      case "multiply":
+        if (usedRate.time_per) {
+          durationValue = (eventValue * usedRate.time_per);
+        }
+        if (usedRate.money_per) {
+          donationValue = (eventValue * usedRate.money_per);
+        }
+        break;
+      case "set":
+        if (usedRate.time_per) {
+          durationValue = usedRate.time_per;
+        }
+        if (usedRate.money_per) {
+          donationValue = usedRate.money_per;
+        }
+        break;
     }
 
-    if (usedRate.adaptive && usedRate.adaptive_value) {
-      const difference = Math.abs(eventValue - usedRate.value);
-      const extraDuration = Math.floor(difference * usedRate.adaptive_value);
+    // if (usedRate.adaptive && usedRate.adaptive_value) {
+    //   const difference = Math.abs(eventValue - usedRate.value);
+    //   const extraDuration = Math.floor(difference * usedRate.adaptive_value);
 
-      durationValue += extraDuration;
-    }
+    //   durationValue += extraDuration;
+    // }
 
-    if (usedRate.adaptive && usedRate.donation_value) {
-      donationValue = eventValue;
-      const extraDonation = Math.floor(eventValue * usedRate.donation_value);
-      donationValue = extraDonation;
-    }
+    // if (usedRate.adaptive && usedRate.donation_value) {
+    //   donationValue = eventValue;
+    //   const extraDonation = Math.floor(eventValue * usedRate.donation_value);
+    //   donationValue = extraDonation;
+    // }
 
     this.addEvent({
       type: usedRate.type,
@@ -194,7 +210,7 @@ export class SubathonManager {
         Log(`Received bit donation from ${event.user_name}. Cheered ${event.bits} bits!`, "SubathonManager");
         break;
       case "channel.subscribe": {
-        Log(`Received subscription from ${event.user_name}.`, "SubathonManager");
+        Log(`Received TIER ${eventValue} subscription from ${event.user_name}.`, "SubathonManager");
         break;
       }
       case "donation": {
@@ -413,6 +429,42 @@ export class SubathonManager {
 
   findUptimeGoal(goal: number) {
     return this.data.subathon_config.uptime_goals.find(g => g.goal === goal);
+  }
+
+  addMoneyToDonationCount(amount: number) {
+    this.donations += amount;
+    this.addEvent({
+      type: "money_added",
+      value: amount,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: 0,
+      donation: amount,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+    });
+  }
+
+  removeMoneyFromDonationCount(amount: number) {
+    this.donations -= amount;
+    this.addEvent({
+      type: "money_removed",
+      value: amount,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: 0,
+      donation: amount,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+    });
+  }
+
+  getDonationCount() {
+    return this.donations;
   }
 
   main() {

@@ -30,7 +30,19 @@ export const AddTimeCommand: Command = {
 
     duration = parseInt(duration);
 
-    subathonManager.addTimeToTimer(duration);
-    channel.send(`@${user}: added ${duration} seconds to the timer.`);
+    if (duration < 0 && subathonManager.getTimer() - Math.abs(duration) < 0) {
+      channel.send(`@${user}: cannot remove ${duration} seconds from the timer. The timer would go below 0.`);
+      return;
+    }
+    
+    if (duration < 0) {
+      subathonManager.removeTimeFromTimer(duration);
+      channel.send(`@${user}: removed ${Math.abs(duration)} seconds from the timer.`);
+      return;
+    } else {
+      subathonManager.addTimeToTimer(duration);
+      channel.send(`@${user}: added ${duration} seconds to the timer.`);
+      return;
+    }
   }
 }

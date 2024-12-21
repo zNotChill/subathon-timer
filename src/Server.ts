@@ -312,41 +312,51 @@ function getPageJS(files: string[]) {
 }
 
 router.get("/settings", authMiddleware, async (ctx) => {
-  const cookies = ctx.cookies;
-  const access_token = await cookies.get("access_token");
-
-  const data = {
-    user: twitchManager.code_user,
-    data: dataManager.removeSensitiveValues(dataManager.getData()),
-    css: getPageCSS(["Main.css"]),
-    js: getPageJS(["Core.js", "Settings.js"]),
-    access_token: access_token,
-    authenticated: true,
-  };
-
-  const html = await ejs.renderFile(`${import.meta.dirname}//frontend//settings.ejs`, data);
-  ctx.response.body = html;
+  try {
+    const cookies = ctx.cookies;
+    const access_token = await cookies.get("access_token");
+  
+    const data = {
+      user: twitchManager.code_user,
+      data: dataManager.removeSensitiveValues(dataManager.getData()),
+      css: getPageCSS(["Main.css"]),
+      js: getPageJS(["Core.js", "Settings.js"]),
+      access_token: access_token,
+      authenticated: true,
+    };
+  
+    const html = await ejs.renderFile(`${import.meta.dirname}//frontend//settings.ejs`, data);
+    ctx.response.body = html;
+  } catch (_error) {
+    ctx.response.status = 500;
+    ctx.response.body = "An error occurred while rendering the page.";
+  }
 });
 
 router.get("/commands", async (ctx) => {
-  const cookies = ctx.cookies;
-  const access_token = await cookies.get("access_token");
+  try {
+    const cookies = ctx.cookies;
+    const access_token = await cookies.get("access_token");
+    
+    const data = {
+      user: twitchManager.code_user,
+      data: dataManager.removeSensitiveValues(dataManager.getData()),
+      css: getPageCSS(["Main.css"]),
+      js: getPageJS(["Core.js", "Commands.js"]),
+      access_token: access_token,
+      authenticated: await isAuthenticated(ctx),
+      commands: {
+        prefix: globalData.config.bot_prefix,
+        commands: Array.from(commands.values()),
+      }
+    };
   
-  const data = {
-    user: twitchManager.code_user,
-    data: dataManager.removeSensitiveValues(dataManager.getData()),
-    css: getPageCSS(["Main.css"]),
-    js: getPageJS(["Core.js", "Commands.js"]),
-    access_token: access_token,
-    authenticated: await isAuthenticated(ctx),
-    commands: {
-      prefix: globalData.config.bot_prefix,
-      commands: Array.from(commands.values()),
-    }
-  };
-
-  const html = await ejs.renderFile(`${import.meta.dirname}//frontend//commands.ejs`, data);
-  ctx.response.body = html;
+    const html = await ejs.renderFile(`${import.meta.dirname}//frontend//commands.ejs`, data);
+    ctx.response.body = html;
+  } catch (_error) {
+    ctx.response.status = 500;
+    ctx.response.body = "An error occurred while rendering the page.";
+  }
 })
 
 /* 
@@ -354,52 +364,57 @@ router.get("/commands", async (ctx) => {
 */
 
 router.get("/element", async (ctx) => {
-  const element = ctx.request.url.searchParams.get("s");;
-  
-  // check {import.meta.dirname}//frontend//elements//${element}.globalData.config.json
-  // if it exists, render the element
-  // else, return 404
-  
-  const elementConfig = preventBacktrack(`${import.meta.dirname}//frontend//elements//${element}.config.json`);
-  const elementRender = preventBacktrack(`${import.meta.dirname}//frontend//elements//${element}.ejs`);
-  let data = {};
-  
   try {
-    data = JSON.parse(Deno.readTextFileSync(elementConfig));
-  } catch (e) {
-    if (e instanceof SyntaxError) {
-      ctx.response.status = 400;
-      ctx.response.body = "Config contains invalid JSON";
+    const element = ctx.request.url.searchParams.get("s");;
+    
+    // check {import.meta.dirname}//frontend//elements//${element}.globalData.config.json
+    // if it exists, render the element
+    // else, return 404
+    
+    const elementConfig = preventBacktrack(`${import.meta.dirname}//frontend//elements//${element}.config.json`);
+    const elementRender = preventBacktrack(`${import.meta.dirname}//frontend//elements//${element}.ejs`);
+    let data = {};
+    
+    try {
+      data = JSON.parse(Deno.readTextFileSync(elementConfig));
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        ctx.response.status = 400;
+        ctx.response.body = "Config contains invalid JSON";
+        return;
+      }
+      
+      ctx.response.status = 404;
+      ctx.response.body = "Element not found";
       return;
     }
+
     
-    ctx.response.status = 404;
-    ctx.response.body = "Element not found";
-    return;
+    // if the object is {}, return 404
+    if (Object.keys(data).length === 0) {
+      ctx.response.status = 404;
+      ctx.response.body = "Element not found";
+      return;
+    }
+
+    // render the element
+
+    const renderData = {
+      data: data,
+      css: getPageCSS(["Main.css"]),
+      js: getPageJS([
+        "Core.js",
+        "Elements.js"
+      ]),
+      info: subathonManager.getRelevantInfo(),
+    };
+
+    const html = await ejs.renderFile(elementRender, renderData);
+    ctx.response.body = html;
+  } catch (_error) {
+    ctx.response.status = 500;
+    ctx.response.body = "An error occurred while rendering the element.";
   }
-
-  
-  // if the object is {}, return 404
-  if (Object.keys(data).length === 0) {
-    ctx.response.status = 404;
-    ctx.response.body = "Element not found";
-    return;
-  }
-
-  // render the element
-
-  const renderData = {
-    data: data,
-    css: getPageCSS(["Main.css"]),
-    js: getPageJS([
-      "Core.js",
-      "Elements.js"
-    ]),
-    info: subathonManager.getRelevantInfo(),
-  };
-
-  const html = await ejs.renderFile(elementRender, renderData);
-  ctx.response.body = html;
 })
 
 /*

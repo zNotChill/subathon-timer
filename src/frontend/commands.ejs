@@ -16,7 +16,14 @@ let commands = <%- JSON.stringify(commands) %>;
     <div class="sidebar-bottom">
       <a class="sidebar-option center">
         <div class="option_text <%= authenticated ? 'green' : 'red' %>">
-          <%= authenticated ? "You are authenticated." : "You are not authenticated." %>
+          <div id="small_screen_text">
+            <icon class="<%= authenticated ? 'green' : 'red' %>">
+              <%= authenticated ? "✅" : "❌" %>
+            </icon>
+          </div>
+          <div id="text">
+            <%= authenticated ? "You are authenticated." : "You are not authenticated." %>
+          </div>
         </div>
       </a>
       <a class="sidebar-option" tab="back">

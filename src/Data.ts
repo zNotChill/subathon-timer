@@ -76,7 +76,7 @@ export const globalData: Data = {
         "socket.token"
       ]
     },
-    port: 4450,
+    port: 4450, // Change this to a different port if needed
     api_base: "https://api.twitch.tv/helix",
     eventsub_url: "https://api.twitch.tv/helix/eventsub/subscriptions",
     eventsub_callback: "{URL}/eventsub",

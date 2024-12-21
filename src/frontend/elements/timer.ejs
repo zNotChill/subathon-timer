@@ -288,7 +288,7 @@ function update() {
 
     timer.querySelector('.text .hours').innerText = String(formatSeconds(data.timer).hours).padStart(2, '0');
     timer.querySelector('.text .minutes').innerText = String(formatSeconds(data.timer).minutes).padStart(2, '0');
-    timer.querySelector('.text .seconds').innerText = String(formatSeconds(data.timer).seconds).padStart(2, '0');
+    timer.querySelector('.text .seconds').innerText = String(Math.floor(formatSeconds(data.timer).seconds)).padStart(2, '0');
   });
 
   if (data.most_recent_event) {
@@ -329,7 +329,7 @@ function update() {
     progress_texts.forEach(progress_text => {
       progress_text.style.color = "<%= data.options.text_color %>";
 
-      progress_text.innerText = currencies[data.currency] + data.donations + "/" + currencies[data.currency] + data.current_goal.goal;
+      progress_text.innerText = currencies[data.currency] + formatNumber(data.donations) + "/" + currencies[data.currency] + data.current_goal.goal;
     
       if (data.current_goal.goal === 0) {
         progress_text.innerText = currencies[data.currency] + data.donations
@@ -403,7 +403,7 @@ function formatSeconds(seconds) {
     string += `${String(hours).padStart(2, '0')}:`;
   }
 
-  string += `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  string += `${String(minutes).padStart(2, '0')}:${String(Math.floor(remainingSeconds)).padStart(2, '0')}`;
 
   return {
     hours,
@@ -411,6 +411,10 @@ function formatSeconds(seconds) {
     seconds: remainingSeconds,
     string
   };
+}
+
+function formatNumber(number) {
+  return parseFloat(number).toFixed(2);
 }
 </script>
 </html>

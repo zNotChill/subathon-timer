@@ -2,10 +2,11 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { dataManager, storageManager, subathonManager, twitchManager } from "./Manager.ts";
+import { dataManager } from "./Manager.ts";
+import { StorageManager } from "./Storage.ts";
 import { server, setAuthOverride } from "./Server.ts";
 import { DataManager } from "./Data.ts";
-import { Log } from "./Logger.ts";
+import { Log, Warn } from "./Logger.ts";
 
 DataManager.loadData();
 let config = DataManager.getConfig();
@@ -16,7 +17,7 @@ let backup_interval;
 const run = new cliffy.Command()
   .description("Run the services (server, Twitch API, etc).")
   .option("-a, --auth-override", "Override the authentication process.")
-  .action(async () => {
+  .action(async (options) => {
     dataManager.loadData();
     
     if (appdata.first_run)
@@ -24,14 +25,23 @@ const run = new cliffy.Command()
 
     if (!config.verify_signature) {
       for (let i = 0; i < 5; i++) {
-        Log("WARNING: Signature verification is disabled. This is not recommended and should only be used for development.", "Main");
+        Warn("WARNING: Signature verification is disabled. This is not recommended and should only be used for development.", "Main");
       }
     }
 
-    // setAuthOverride(!!options.auth_override);
-    await server;
+    setAuthOverride(!!options.authOverride);
+    // await server;
     // await watchConfig(); error: Uncaught (in promise) ReferenceError: Cannot access 'options' before initialization
-
+    try {
+      await server;
+    } catch (error) {
+      if (error instanceof Deno.errors.AddrInUse) {
+        console.error(`Port ${config.port} is already in use. Please use a different port.`);
+        Deno.exit(1);
+      } else {
+        throw error;
+      }
+    }
     backup_interval = setInterval(() => {
       const backupName = DataManager.saveBackup(DataManager.getData());
       Log(`Data has been backed up to ${backupName}`, "Backup");
@@ -54,10 +64,19 @@ const runSetup = async () => {
   appdata.first_run = false;
   dataManager.saveData();
 }
+const { options } = await new cliffy.Command()
+  .name("apricot")
+  .version("0.1.0")
+  .description("A CLI tool for managing your subathon.")
+  .option("-c, --config <file:string>", "Path to the config file.", { default: "config.json" })
+  .option("-a", "Auth Override")
+  .option("-i, --auth-info", "Prints the authentication information.")
+  .command("run", run)
+  .parse(Deno.args);
 
-const authInfo = new cliffy.Command()
-  .description("Prints the authentication information.")
-  .action(async () => {
+if (options.authInfo) {
+  try {
+    const storageManager = new StorageManager();
     let access_token = await storageManager.get("access_token");
     let refresh_token = await storageManager.get("refresh_token");
     let streamlabs_access_token = await storageManager.get("streamlabs_access_token");
@@ -75,19 +94,9 @@ const authInfo = new cliffy.Command()
     console.log(`Streamlabs Refresh Token: *streamlabs doesn't need refreshing, token is permanent*`);
     console.log(`Bot Access Token: ${bot_access_token}`);   
     console.log(`Bot Refresh Token: ${bot_refresh_token}`);
-    process.exit(0);
-  });
-
-const { options } = await new cliffy.Command()
-  .name("apricot")
-  .version("0.1.0")
-  .description("A CLI tool for managing your subathon.")
-  .option("-c, --config <file:string>", "Path to the config file.", { default: "config.json" })
-  .option("-a", "Auth Override")
-  .command("run", run) // Run the services (server, Twitch API, etc).
-  .command("auth-info", authInfo) // Prints the authentication information
-  .parse(Deno.args);
-
-if (options.authOverride) {
-  setAuthOverride(true);
+  } catch (error) {
+    console.error("Error while getting authentication information.");
+  }
+  
+  Deno.exit();
 }

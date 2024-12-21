@@ -13,6 +13,7 @@ import { AddGoalCommand } from "./bot/commands/AddGoal.ts";
 import { RemoveGoalCommand } from "./bot/commands/RemoveGoal.ts";
 import { AddUptimeGoalCommand } from "./bot/commands/AddUptimeGoal.ts";
 import { RemoveUptimeGoalComamnd } from "./bot/commands/RemoveUptimeGoal.ts";
+import { AddMoneyCommand } from "./bot/commands/AddMoney.ts";
 
 export class BotManager {
   channel: Channel | undefined;
@@ -103,3 +104,4 @@ commands.set(AddGoalCommand.name, AddGoalCommand);
 commands.set(RemoveGoalCommand.name, RemoveGoalCommand);
 commands.set(AddUptimeGoalCommand.name, AddUptimeGoalCommand);
 commands.set(RemoveUptimeGoalComamnd.name, RemoveUptimeGoalComamnd);
+commands.set(AddMoneyCommand.name, AddMoneyCommand);
