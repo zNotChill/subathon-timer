@@ -53,6 +53,24 @@ const configSettings = [
           value: data.config.channel.id,
           disabled: false
         }
+      },
+      {
+        text: "Bot Username",
+        description: "The username of the bot that is being used to authenticate.",
+        input: {
+          type: "input",
+          value: data.config.bot_user.name,
+          disabled: false
+        }
+      },
+      {
+        text: "Bot ID",
+        description: "The ID of the bot that is being used to authenticate.",
+        input: {
+          type: "input",
+          value: data.config.bot_user.id,
+          disabled: false
+        }
       }
     ]
   },
@@ -107,6 +125,8 @@ const configSettings = [
     ]
   }
 ]
+
+console.log(data);
 
 const subathonSettings = [
   {
@@ -232,14 +252,14 @@ function renderSettings(tab) {
 }
 
 renderSettings("config");
-setOptionActive("settings", true);
+document.querySelector(".sidebar-option[tab='config']").classList.add("active");
 
 document.querySelectorAll(".sidebar-option").forEach((tab) => {
   if (!tab.hasAttribute("tab")) return;
   const tabName = tab.attributes["tab"].value;
   if(!tabName) return;
   tab.addEventListener("click", () => {
-    renderSettings(tabName, "subathon");
+    renderSettings(tabName);
 
     document.querySelectorAll(".sidebar-option[tab]").forEach((tab) => {
       tab.classList.remove("active");

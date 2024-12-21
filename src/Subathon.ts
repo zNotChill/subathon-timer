@@ -377,6 +377,44 @@ export class SubathonManager {
     });
   }
 
+  addGoal(goal: number, title: string) {
+    this.data.subathon_config.donation_goals.push({
+      goal,
+      title
+    });
+
+    dataManager.saveData();
+  }
+
+  addUptimeGoal(goal: number, title: string) {
+    this.data.subathon_config.uptime_goals.push({
+      goal,
+      title
+    });
+
+    dataManager.saveData();
+  }
+
+  removeGoal(goal: number) {
+    this.data.subathon_config.donation_goals = this.data.subathon_config.donation_goals.filter(g => g.goal !== goal);
+
+    dataManager.saveData();
+  }
+
+  removeUptimeGoal(goal: number) {
+    this.data.subathon_config.uptime_goals = this.data.subathon_config.uptime_goals.filter(g => g.goal !== goal);
+
+    dataManager.saveData();
+  }
+
+  findGoal(goal: number) {
+    return this.data.subathon_config.donation_goals.find(g => g.goal === goal);
+  }
+
+  findUptimeGoal(goal: number) {
+    return this.data.subathon_config.uptime_goals.find(g => g.goal === goal);
+  }
+
   main() {
     Log("Subathon has started!", "SubathonManager");
 

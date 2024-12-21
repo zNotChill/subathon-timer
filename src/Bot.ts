@@ -9,6 +9,10 @@ import { PauseTimerCommand } from "./bot/commands/PauseTimer.ts";
 import { ResumeTimerCommand } from "./bot/commands/ResumeTimer.ts";
 import { AddAuthUserCommand } from "./bot/commands/AddAuthUser.ts";
 import { RemoveAuthUserCommand } from "./bot/commands/RemoveAuthUser.ts";
+import { AddGoalCommand } from "./bot/commands/AddGoal.ts";
+import { RemoveGoalCommand } from "./bot/commands/RemoveGoal.ts";
+import { AddUptimeGoalCommand } from "./bot/commands/AddUptimeGoal.ts";
+import { RemoveUptimeGoalComamnd } from "./bot/commands/RemoveUptimeGoal.ts";
 
 export class BotManager {
   channel: Channel | undefined;
@@ -95,3 +99,7 @@ commands.set(PauseTimerCommand.name, PauseTimerCommand);
 commands.set(ResumeTimerCommand.name, ResumeTimerCommand);
 commands.set(AddAuthUserCommand.name, AddAuthUserCommand);
 commands.set(RemoveAuthUserCommand.name, RemoveAuthUserCommand);
+commands.set(AddGoalCommand.name, AddGoalCommand);
+commands.set(RemoveGoalCommand.name, RemoveGoalCommand);
+commands.set(AddUptimeGoalCommand.name, AddUptimeGoalCommand);
+commands.set(RemoveUptimeGoalComamnd.name, RemoveUptimeGoalComamnd);

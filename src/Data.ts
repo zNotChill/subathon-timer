@@ -243,7 +243,7 @@ export class DataManager {
   }
 
   static removeSensitiveValues(data: Data) {
-    const newData = data;
+    const newData: Data = JSON.parse(JSON.stringify(data));
 
     newData.config.secret_key = "";
     newData.config.client.secret = "";

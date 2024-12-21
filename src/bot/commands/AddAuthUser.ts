@@ -16,28 +16,33 @@ export const AddAuthUserCommand: Command = {
   ],
   auth: true,
   execute: async (args: string[], channel: Channel, user: string) => {
-    if (args.length === 0) {
-      channel.send(`@${user}: please provide a user.`);
-      return;
+    try {
+      if (args.length === 0) {
+        channel.send(`@${user}: please provide a user.`);
+        return;
+      }
+      
+      const twitchUser: string = args[0];
+      const validatedTwitchUser = await twitchManager.getUserInfoFromName(twitchUser);
+      
+      if (validatedTwitchUser.data.length === 0) {
+        channel.send(`@${user}: please provide a valid user.`);
+        return;
+      }
+  
+      const name = validatedTwitchUser.data[0].login;
+      const isUserAlreadyAuthed = botManager.isUserAuthed(name);
+  
+      if (isUserAlreadyAuthed) {
+        channel.send(`@${user}: ${name} is already an authed user.`);
+        return;
+      }
+  
+      botManager.addAuthedUser(name);
+      channel.send(`@${user}: ${name} was granted bot authentication.`);
+    } catch (error) {
+      console.error(error);
+      channel.send(`@${user}: an error occurred while adding the user.`);
     }
-    
-    const twitchUser: string = args[0];
-    const validatedTwitchUser = await twitchManager.getUserInfoFromName(twitchUser);
-    
-    if (validatedTwitchUser.data.length === 0) {
-      channel.send(`@${user}: please provide a valid user.`);
-      return;
-    }
-
-    const name = validatedTwitchUser.data[0].login;
-    const isUserAlreadyAuthed = botManager.isUserAuthed(name);
-
-    if (isUserAlreadyAuthed) {
-      channel.send(`@${user}: ${name} is already an authed user.`);
-      return;
-    }
-
-    botManager.addAuthedUser(name);
-    channel.send(`@${user}: ${name} was granted bot authentication.`);
   }
 }
