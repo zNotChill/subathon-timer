@@ -13,13 +13,23 @@ function renderCommands() {
       "<th>Command</th>",
       "<th>Description</th>",
       "<th>Usage</th>",
-      "<th>Auth?</th>",
+      "<th>Usable without Auth?</th>",
     "</tr>",
   ].join("");
 
   tableData.innerHTML = header;
 
-  Object.keys(commands.commands).forEach((command) => {
+  // sort the commands based on if they are mod only or not
+  const commandsSorted = Object.keys(commands.commands).sort((a, b) => {
+    const cmdA = commands.commands[a];
+    const cmdB = commands.commands[b];
+
+    if (cmdA.auth && !cmdB.auth) return 1;
+    if (!cmdA.auth && cmdB.auth) return -1;
+    return 0;
+  });
+
+  commandsSorted.forEach((command) => {
     const cmd = commands.commands[command];
 
     const commandContainer = document.createElement("tr");
@@ -67,8 +77,16 @@ function renderCommands() {
     commandContainer.appendChild(commandUsage);
     
     const commandAuth = document.createElement("td");
+    commandAuth.classList.add("center");
     const iconContainer = document.createElement("icon");
-    iconContainer.innerHTML = cmd.auth ? tickIcon : crossIcon;
+    iconContainer.innerHTML = cmd.auth ? crossIcon : tickIcon;
+
+    if (cmd.auth) {
+      iconContainer.classList.add("red");
+    } else {
+      iconContainer.classList.add("green");
+    }
+
     commandAuth.appendChild(iconContainer);
     commandContainer.appendChild(commandAuth);
 

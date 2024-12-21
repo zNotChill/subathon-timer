@@ -52,6 +52,15 @@ html, body {
 .green {
   color: var(--button-green)!important;
 }
+.green svg {
+  color: var(--button-green)!important;
+  stroke: var(--button-green)!important;
+}
+
+.red svg {
+  color: var(--button-red)!important;
+  stroke: var(--button-red)!important;
+}
 
 a {
   color: white;
@@ -137,6 +146,21 @@ body.settings_page .settings-container {
   height: 1px;
   background-color: var(--lighter-text);
   margin: 10px 0;
+  position: relative;
+}
+
+.sidebar-splitter #text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--background-slightly-lighter);
+  padding: 0 15px;
+  font-size: 0.8em;
+  color: var(--lighter-text);
+  text-transform: uppercase;
+  user-select: none;
+  font-weight: 800;
 }
 
 /* Settings */
@@ -440,4 +464,8 @@ th {
 td {
   color: white;
   border-bottom: 1px solid var(--lighter);
+}
+
+td.center {
+  text-align: center;
 }
