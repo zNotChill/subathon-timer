@@ -1,4 +1,4 @@
-import { Config, Data } from "./Data.ts";
+import { Data } from "./Data.ts";
 import { User } from "./types/User.ts";
 import { Log, Error } from "./Logger.ts";
 import { SubscriptionType } from "./types/EventSub.ts";

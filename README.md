@@ -26,7 +26,6 @@ This script will install the global Deno command `apricot`.
 ## 3. Install Chocolatey and Ngrok
 
 This step can be skipped if you are using a server.
-This step uses Command Prompt.
 
 ### Make a Ngrok account
 
