@@ -66,9 +66,11 @@ export type Event = {
 export type DonationGoal = {
   goal: number,
   title: string,
+  description: string,
 }
 
 export type UptimeGoal = {
   goal: number,
   title: string,
+  description: string,
 }

@@ -242,6 +242,21 @@ export class DataManager {
     return backupName;
   }
 
+  static loadBackup(backupName: string) {
+    try {
+      const backupData = Deno.readFileSync(`data/backups/${backupName}.json`);
+      const backupText = new TextDecoder().decode(backupData);
+      const backup: Data = JSON.parse(backupText);
+
+      globalData.config = backup.config;
+      globalData.app = backup.app;
+      globalData.subathon_config = backup.subathon_config;
+      return globalData;
+    } catch (_error) {
+      return {};
+    }
+  }
+
   static removeSensitiveValues(data: Data) {
     const newData: Data = JSON.parse(JSON.stringify(data));
 

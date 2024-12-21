@@ -2,10 +2,10 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { dataManager } from "./Manager.ts";
+import { dataManager, subathonManager } from "./Manager.ts";
 import { StorageManager } from "./Storage.ts";
 import { server, setAuthOverride } from "./Server.ts";
-import { DataManager } from "./Data.ts";
+import { Data, DataManager } from "./Data.ts";
 import { Log, Warn } from "./Logger.ts";
 
 DataManager.loadData();
@@ -17,8 +17,10 @@ let backup_interval;
 const run = new cliffy.Command()
   .description("Run the services (server, Twitch API, etc).")
   .option("-a, --auth-override", "Override the authentication process.")
+  .option("-b, --backup <file:string>", "Load a backup file.")
   .action(async (options) => {
     dataManager.loadData();
+    // dataManager.loadData();
     
     if (appdata.first_run)
       await runSetup();
@@ -45,7 +47,24 @@ const run = new cliffy.Command()
     backup_interval = setInterval(() => {
       const backupName = DataManager.saveBackup(DataManager.getData());
       Log(`Data has been backed up to ${backupName}`, "Backup");
-    }, config.backup_frequency * 1000);
+    }, config.backup_frequency * 1000);  
+    
+    if (options.backup) {
+      Log(`Loading backup file ${options.backup}...`, "Backup");
+      const data = dataManager.loadBackup(options.backup);
+
+      if (!data) {
+        Log(`Backup file ${options.backup} not found.`, "Backup");
+        return;
+      }
+
+      subathonManager.setData(data as Data);
+      subathonManager.setTimerFromHistory();
+      subathonManager.setDonationsFromHistory();
+      console.log(subathonManager.data);
+      
+      Log(`Backup file ${options.backup} loaded.`, "Backup");
+    }
   });
 
 const runSetup = async () => {

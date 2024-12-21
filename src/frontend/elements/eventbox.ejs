@@ -233,7 +233,7 @@ function update() {
     eventBox.classList.add("event-box", "animate-in");
     eventBox.dataset.timestamp = event.timestamp;
 
-    const profile_image = event.helix_user.data[0] ? event.helix_user.data[0].profile_image_url : "";
+    const profile_image =! event.helix_user.error ? event.helix_user.data[0].profile_image_url : "";
 
     let displayMessage = event.message;
 

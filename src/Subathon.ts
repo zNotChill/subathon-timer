@@ -20,8 +20,12 @@ export class SubathonManager {
   timer_paused: boolean;
   timer_paused_at: number;
 
-  constructor() {
+  constructor(optionalData?: Data) {
     this.data = dataManager.getData();
+
+    if (optionalData) {
+      this.data = optionalData;
+    }
     this.timer = 600; // 10 mins by default, should this be configurable?
     this.uptime = 0;
     this.sessionHistory = [
@@ -411,7 +415,8 @@ export class SubathonManager {
   addGoal(goal: number, title: string) {
     this.data.subathon_config.donation_goals.push({
       goal,
-      title
+      title,
+      description: ""
     });
 
     dataManager.saveData();
@@ -420,7 +425,8 @@ export class SubathonManager {
   addUptimeGoal(goal: number, title: string) {
     this.data.subathon_config.uptime_goals.push({
       goal,
-      title
+      title,
+      description: ""
     });
 
     dataManager.saveData();
@@ -489,6 +495,10 @@ export class SubathonManager {
     return this.sessionHistory.filter(event => event.user_name).slice(-count).reverse();
   }
 
+  setData(data: Data) {
+    this.data = data;
+  }
+
   main() {
     Log("Subathon has started!", "SubathonManager");
 
@@ -496,12 +506,12 @@ export class SubathonManager {
     Log(`Donations are at ${this.donations} ${this.data.subathon_config.currency}.`, "SubathonManager");
 
     // Start the timer
-    const interval = setInterval(() => {
+    const _interval = setInterval(() => {
       if (!this.timer_paused) {
         if (this.timer <= 0) {
           Log("Subathon has ended!", "SubathonManager");
           this.timer = 0;
-          clearInterval(interval);
+          // clearInterval(interval);
           return;
         }
 

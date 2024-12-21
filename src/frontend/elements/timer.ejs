@@ -255,7 +255,8 @@ const currencies = {
 }
 
 let data = <%- JSON.stringify(info) %>;
-let lastDataUpdate = 0;
+let lastDataUpdate = Date.now();
+let lastTimerUpdate = Date.now();
 
 function update() {
   const timers = document.querySelectorAll('.timer');
@@ -362,22 +363,25 @@ function update() {
 }
 
 setInterval(async () => {
-  if (Date.now() - lastDataUpdate > 1500) {
+  if (Date.now() - lastDataUpdate > 1000) {
+    lastDataUpdate = Date.now();
     const response = await fetch('/api/timer');
     data = await response.json();
-    lastDataUpdate = Date.now();
   };
 
   // Even if the data isn't synced properly,
   // the timer will still update to avoid
   // poor user experience
-
-  if (!data.paused && data.timer > 0) {
-    data.timer = data.timer - 1;
+  
+  if (Date.now() % 1000 === 0) {
+    if (!data.paused && data.timer > 0) {
+      data.timer = data.timer - 1;
+    }
+    lastTimerUpdate = Date.now();
   }
 
   update();
-}, 1000);
+}, 1);
 
 update();
 
