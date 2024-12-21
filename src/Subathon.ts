@@ -495,6 +495,42 @@ export class SubathonManager {
     return this.sessionHistory.filter(event => event.user_name).slice(-count).reverse();
   }
 
+  getTopDonations(count: number = 10) {
+    return this.sessionHistory.filter(event => event.donation > 0 && event.user_name).slice(-count).reverse();
+  }
+
+  getTopTimeAdded(count: number = 10) {
+    return this.sessionHistory.filter(event => event.type === "time_added").slice(-count).reverse();
+  }
+
+  getTopDonatingUsers(count: number = 10) {
+    const users = this.sessionHistory.filter(event => event.donation > 0 && event.user_name).reduce((acc, event) => {
+      if (acc[event.user_name]) {
+        acc[event.user_name] += event.donation;
+      } else {
+        acc[event.user_name] = event.donation;
+      }
+
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(users).sort((a, b) => b[1] - a[1]).slice(0, count);
+  }
+
+  getTopTimeAddingUsers(count: number = 10) {
+    const users = this.sessionHistory.filter(event => event.duration > 0 && event.user_name).reduce((acc, event) => {
+      if (acc[event.user_name]) {
+        acc[event.user_name] += event.duration;
+      } else {
+        acc[event.user_name] = event.duration;
+      }
+
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(users).sort((a, b) => b[1] - a[1]).slice(0, count);
+  }
+
   setData(data: Data) {
     this.data = data;
   }
@@ -509,13 +545,12 @@ export class SubathonManager {
     const _interval = setInterval(() => {
       if (!this.timer_paused) {
         if (this.timer <= 0) {
-          Log("Subathon has ended!", "SubathonManager");
           this.timer = 0;
-          // clearInterval(interval);
-          return;
+        } else {
+          this.timer -= 1;
         }
-
-        this.timer -= 1;
+        
+        this.uptime += 1;
 
         if (this.globalMultiplierCountdown > 0) {
           this.globalMultiplierCountdown -= 1;
@@ -523,7 +558,6 @@ export class SubathonManager {
           this.globalMultiplier = 1;
         }
 
-        this.uptime += 1;
       }
 
       // Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");

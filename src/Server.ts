@@ -359,6 +359,56 @@ router.get("/commands", async (ctx) => {
   }
 })
 
+router.get("/rates", async (ctx) => {
+  try {
+    const cookies = ctx.cookies;
+    const access_token = await cookies.get("access_token");
+    
+    const data = {
+      user: twitchManager.code_user,
+      data: dataManager.removeSensitiveValues(dataManager.getData()),
+      css: getPageCSS(["Main.css"]),
+      js: getPageJS(["Core.js", "Rates.js"]),
+      access_token: access_token,
+      authenticated: await isAuthenticated(ctx),
+      rates: subathonManager.getRates(),
+      currency: globalData.subathon_config.currency,
+      current_subathon: subathonManager.getRelevantInfo(),
+    };
+  
+    const html = await ejs.renderFile(`${import.meta.dirname}//frontend//rates.ejs`, data);
+    ctx.response.body = html;
+  } catch (_error) {
+    ctx.response.status = 500;
+    ctx.response.body = "An error occurred while rendering the page.";
+  }
+})
+
+router.get("/leaderboard", async (ctx) => {
+  try {
+    const cookies = ctx.cookies;
+    const access_token = await cookies.get("access_token");
+    
+    const data = {
+      user: twitchManager.code_user,
+      data: dataManager.removeSensitiveValues(dataManager.getData()),
+      css: getPageCSS(["Main.css"]),
+      js: getPageJS(["Core.js", "Leaderboard.js"]),
+      access_token: access_token,
+      authenticated: await isAuthenticated(ctx),
+      top_donators: subathonManager.getTopDonatingUsers(),
+      top_time_adders: subathonManager.getTopTimeAddingUsers(),
+      currency: globalData.subathon_config.currency,
+    };
+  
+    const html = await ejs.renderFile(`${import.meta.dirname}//frontend//leaderboard.ejs`, data);
+    ctx.response.body = html;
+  } catch (_error) {
+    ctx.response.status = 500;
+    ctx.response.body = "An error occurred while rendering the page.";
+  }
+})
+
 /* 
   Elements Page
 */

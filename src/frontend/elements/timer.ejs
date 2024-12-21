@@ -362,26 +362,24 @@ function update() {
   });
 }
 
+
 setInterval(async () => {
-  if (Date.now() - lastDataUpdate > 1000) {
-    lastDataUpdate = Date.now();
+  if (Date.now() - lastDataUpdate > 1500) {
     const response = await fetch('/api/timer');
     data = await response.json();
+    lastDataUpdate = Date.now();
   };
 
   // Even if the data isn't synced properly,
   // the timer will still update to avoid
   // poor user experience
-  
-  if (Date.now() % 1000 === 0) {
-    if (!data.paused && data.timer > 0) {
-      data.timer = data.timer - 1;
-    }
-    lastTimerUpdate = Date.now();
+
+  if (!data.paused && data.timer > 0) {
+    data.timer = data.timer - 1;
   }
 
   update();
-}, 1);
+}, 1000);
 
 update();
 
@@ -400,15 +398,15 @@ function formatSeconds(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
-
+  
   let string = "";
-
+  
   if (hours > 0) {
     string += `${String(hours).padStart(2, '0')}:`;
   }
-
+  
   string += `${String(minutes).padStart(2, '0')}:${String(Math.floor(remainingSeconds)).padStart(2, '0')}`;
-
+  
   return {
     hours,
     minutes,
@@ -417,6 +415,9 @@ function formatSeconds(seconds) {
   };
 }
 
+function roundToNearestHundred(num) {
+  return Math.ceil(num / 100) * 100;
+}
 function formatNumber(number) {
   return parseFloat(number).toFixed(2);
 }

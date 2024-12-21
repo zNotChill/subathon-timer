@@ -167,8 +167,8 @@ const currencies = {
 }
 
 let data = <%- JSON.stringify(info) %>;
-let lastDataUpdate = 0;
-let lastTimerUpdate = 0;
+let lastDataUpdate = Date.now();
+let lastTimerUpdate = Date.now();
 
 function update() {
   const timers = document.querySelectorAll('.timer');
@@ -227,24 +227,21 @@ function update() {
 
 setInterval(async () => {
   if (Date.now() - lastDataUpdate > 1500) {
-    lastDataUpdate = Date.now();
     const response = await fetch('/api/timer');
     data = await response.json();
+    lastDataUpdate = Date.now();
   };
 
   // Even if the data isn't synced properly,
   // the uptime will still update to avoid
   // poor user experience
 
-  if (Date.now() - lastTimerUpdate > 1000) {
-    if (!data.paused && data.uptime > 0) {
-      data.uptime += 1;
-    }
-    lastTimerUpdate = Date.now();
+  if (!data.paused && data.uptime > 0) {
+    data.uptime = data.uptime + 1;
   }
 
   update();
-}, 1);
+}, 1000);
 
 update();
 
@@ -267,6 +264,10 @@ function formatSeconds(seconds) {
     seconds: remainingSeconds,
     string
   };
+}
+
+function roundToNearestHundred(num) {
+  return Math.ceil(num / 100) * 100;
 }
 
 // Reload the page every 3 minutes

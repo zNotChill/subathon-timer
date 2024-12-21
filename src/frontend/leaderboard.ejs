@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rates</title>
+</head>
+<script>
+const top_donators = <%- JSON.stringify(top_donators) %>;
+const top_time_adders = <%- JSON.stringify(top_time_adders) %>;
+const currency = <%- JSON.stringify(currency) %>;
+</script>
+<body class="commands_page">
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <a class="sidebar-option" tab="money" selected>
+        <div class="option_text">
+          <icon>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"> <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path> <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path> </svg> 
+          </icon>
+          Money
+        </div>
+      </a>
+      <a class="sidebar-option" tab="time">
+        <div class="option_text">
+          <icon>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"> <path d="M3 8m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z"></path> <path d="M12 8l0 13"></path> <path d="M19 12v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-7"></path> <path d="M7.5 8a2.5 2.5 0 0 1 0 -5a4.8 8 0 0 1 4.5 5a4.8 8 0 0 1 4.5 -5a2.5 2.5 0 0 1 0 5"></path> </svg> 
+          </icon>
+          Time
+        </div>
+      </a>
+      <%- include ("sidebar.ejs") %>
+    </div>
+    <div class="sidebar-bottom">
+      <a class="sidebar-option center">
+        <div class="option_text <%= authenticated ? 'green' : 'red' %>">
+          <div id="small_screen_text">
+            <icon class="<%= authenticated ? 'green' : 'red' %>">
+              <%= authenticated ? "✅" : "❌" %>
+            </icon>
+          </div>
+          <div id="text">
+            <%= authenticated ? "You are authenticated." : "You are not authenticated." %>
+          </div>
+        </div>
+      </a>
+      <a class="sidebar-option" tab="back">
+        <div class="option_text">
+          <icon>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"> <path d="M5 12l14 0"></path> <path d="M5 12l4 4"></path> <path d="M5 12l4 -4"></path> </svg> 
+          </icon>
+          Back
+        </div>
+      </a>
+    </div>
+  </div>
+  <table class="leaderboard settings-container"></table>
+  <div class="footer">
+    <div class="footer-text">
+      Made with ❤️ by <a href="https://github.com/zNotChill/subathon-timer" target="_blank">zNotChill</a>. &copy; 2024
+    </div>
+  </div>
+</body>
+<%- include ("core.ejs") %>
+</html>

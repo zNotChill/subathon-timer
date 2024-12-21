@@ -21,3 +21,7 @@ function purify(html) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
+
+function formatNumber(number) {
+  return parseFloat(number).toFixed(2);
+}

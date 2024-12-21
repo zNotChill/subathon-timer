@@ -212,6 +212,7 @@ export class DataManager {
   }
   
   static saveData() {
+    globalData.subathon_config.history = [];
     Deno.writeFileSync("data/config.json", new TextEncoder().encode(JSON.stringify(globalData.config, null, 2)));
     Deno.writeFileSync("data/data.json", new TextEncoder().encode(JSON.stringify(globalData.app, null, 2)));
     Deno.writeFileSync("data/subathon.json", new TextEncoder().encode(JSON.stringify(globalData.subathon_config, null, 2)));
