@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subathon Timer</title>
+</head>
+<style>
+@import url(https://fonts.bunny.net/css?family=chivo-mono:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i|fira-code:300,400,500,600,700|inter:100,200,300,400,500,600,700,800,900|manrope:200,300,400,500,600,700,800|montserrat:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i);
+
+:root {
+  --font-size: 1em;
+  --font-family: "Inter", sans-serif;
+  --font-weight: 400;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family);
+  user-select: none;
+  color: #fff;
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.eventbox-container {
+  position: fixed;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.event-box {
+  width: 500px;
+  height: 100px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 0.5fr 1fr;
+  grid-template-rows: repeat(5, 1fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  border-radius: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-box.animate-in {
+  animation: slideIn 0.5s;
+}
+
+.event-box.animate-out {
+  animation: slideOut 0.5s;
+}
+
+.event-box .background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px) brightness(0.3);
+  z-index: 1;
+  border-radius: 25px;
+}
+
+.event-box .left {
+  grid-area: 1 / 1 / 2 / 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  margin-left: 20px;
+  z-index: 3;
+}
+
+.event-box .center {
+  grid-area: 1 / 2 / 2 / 4;
+  display: flex;
+  padding-top: 15px;
+  height: 100px;
+  z-index: 3;
+}
+
+.event-box .right {
+  grid-area: 1 / 4 / 2 / 6;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: end;
+  height: 100px;
+  padding: 10px 20px;
+  z-index: 3;
+}
+
+.avatar-container {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 13px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+img.avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 13px;
+  z-index: 5;
+}
+
+img[src=""] {
+  display: none;
+}
+
+.fallback_image {
+  width: 70px;
+  height: 70px;
+  border-radius: 13px;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSIjREZBMTU5Ii8+CjxwYXRoIGQ9Ik0yMzcuNjM2IDMwMi42MzZWMzAxLjU0NUMyMzcuNzU4IDI4OS45NyAyMzguOTcgMjgwLjc1OCAyNDEuMjczIDI3My45MDlDMjQzLjU3NiAyNjcuMDYxIDI0Ni44NDggMjYxLjUxNSAyNTEuMDkxIDI1Ny4yNzNDMjU1LjMzMyAyNTMuMDMgMjYwLjQyNCAyNDkuMTIxIDI2Ni4zNjQgMjQ1LjU0NUMyNjkuOTM5IDI0My4zNjQgMjczLjE1MiAyNDAuNzg4IDI3NiAyMzcuODE4QzI3OC44NDggMjM0Ljc4OCAyODEuMDkxIDIzMS4zMDMgMjgyLjcyNyAyMjcuMzY0QzI4NC40MjQgMjIzLjQyNCAyODUuMjczIDIxOS4wNjEgMjg1LjI3MyAyMTQuMjczQzI4NS4yNzMgMjA4LjMzMyAyODMuODc5IDIwMy4xODIgMjgxLjA5MSAxOTguODE4QzI3OC4zMDMgMTk0LjQ1NSAyNzQuNTc2IDE5MS4wOTEgMjY5LjkwOSAxODguNzI3QzI2NS4yNDIgMTg2LjM2NCAyNjAuMDYxIDE4NS4xODIgMjU0LjM2NCAxODUuMTgyQzI0OS4zOTQgMTg1LjE4MiAyNDQuNjA2IDE4Ni4yMTIgMjQwIDE4OC4yNzNDMjM1LjM5NCAxOTAuMzMzIDIzMS41NDUgMTkzLjU3NiAyMjguNDU1IDE5OEMyMjUuMzY0IDIwMi40MjQgMjIzLjU3NiAyMDguMjEyIDIyMy4wOTEgMjE1LjM2NEgyMDAuMTgyQzIwMC42NjcgMjA1LjA2MSAyMDMuMzMzIDE5Ni4yNDIgMjA4LjE4MiAxODguOTA5QzIxMy4wOTEgMTgxLjU3NiAyMTkuNTQ1IDE3NS45NyAyMjcuNTQ1IDE3Mi4wOTFDMjM1LjYwNiAxNjguMjEyIDI0NC41NDUgMTY2LjI3MyAyNTQuMzY0IDE2Ni4yNzNDMjY1LjAzIDE2Ni4yNzMgMjc0LjMwMyAxNjguMzk0IDI4Mi4xODIgMTcyLjYzNkMyOTAuMTIxIDE3Ni44NzkgMjk2LjI0MiAxODIuNjk3IDMwMC41NDUgMTkwLjA5MUMzMDQuOTA5IDE5Ny40ODUgMzA3LjA5MSAyMDUuOTA5IDMwNy4wOTEgMjE1LjM2NEMzMDcuMDkxIDIyMi4wMyAzMDYuMDYxIDIyOC4wNjEgMzA0IDIzMy40NTVDMzAyIDIzOC44NDggMjk5LjA5MSAyNDMuNjY3IDI5NS4yNzMgMjQ3LjkwOUMyOTEuNTE1IDI1Mi4xNTIgMjg2Ljk3IDI1NS45MDkgMjgxLjYzNiAyNTkuMTgyQzI3Ni4zMDMgMjYyLjUxNSAyNzIuMDMgMjY2LjAzIDI2OC44MTggMjY5LjcyN0MyNjUuNjA2IDI3My4zNjQgMjYzLjI3MyAyNzcuNjk3IDI2MS44MTggMjgyLjcyN0MyNjAuMzY0IDI4Ny43NTggMjU5LjU3NiAyOTQuMDMgMjU5LjQ1NSAzMDEuNTQ1VjMwMi42MzZIMjM3LjYzNlpNMjQ5LjI3MyAzNTYuNDU1QzI0NC43ODggMzU2LjQ1NSAyNDAuOTM5IDM1NC44NDggMjM3LjcyNyAzNTEuNjM2QzIzNC41MTUgMzQ4LjQyNCAyMzIuOTA5IDM0NC41NzYgMjMyLjkwOSAzNDAuMDkxQzIzMi45MDkgMzM1LjYwNiAyMzQuNTE1IDMzMS43NTggMjM3LjcyNyAzMjguNTQ1QzI0MC45MzkgMzI1LjMzMyAyNDQuNzg4IDMyMy43MjcgMjQ5LjI3MyAzMjMuNzI3QzI1My43NTggMzIzLjcyNyAyNTcuNjA2IDMyNS4zMzMgMjYwLjgxOCAzMjguNTQ1QzI2NC4wMyAzMzEuNzU4IDI2NS42MzYgMzM1LjYwNiAyNjUuNjM2IDM0MC4wOTFDMjY1LjYzNiAzNDMuMDYxIDI2NC44NzkgMzQ1Ljc4OCAyNjMuMzY0IDM0OC4yNzNDMjYxLjkwOSAzNTAuNzU4IDI1OS45MzkgMzUyLjc1OCAyNTcuNDU1IDM1NC4yNzNDMjU1LjAzIDM1NS43MjcgMjUyLjMwMyAzNTYuNDU1IDI0OS4yNzMgMzU2LjQ1NVoiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuNzUiLz4KPC9zdmc+Cg==);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.message {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.timestamp {
+  font-size: 14px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.center .text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.notification_tag {
+  padding: 5px 9px;
+  border-radius: 5px;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.notification_tag.small {
+  padding: 2px 5px;
+  font-size: 19px;
+  margin-right: 10px;
+}
+</style>
+<body>
+  <div class="eventbox-container"></div>
+</body>
+<script>
+const currencies = {
+  "USD": "$",
+  "EUR": "€",
+  "GBP": "£",
+  "JPY": "¥",
+  "CNY": "¥",
+  "RUB": "₽",
+  "KRW": "₩",
+  "INR": "₹",
+  "BRL": "R$",
+  "CAD": "$",
+  "AUD": "$",
+  "MXN": "$",
+  "IDR": "Rp",
+  "TRY": "₺",
+  "ZAR": "R",
+  "HKD": "$",
+  "PHP": "₱",
+}
+
+let data = <%- JSON.stringify(info) %>;
+let lastDataUpdate = 0;
+let alreadyAcknowledgedTimestamps = [];
+
+function update() {
+  const eventBoxContainer = document.querySelector(".eventbox-container");
+  const existingBoxes = document.querySelectorAll(".event-box");
+
+  // remove any box above the 5th box
+  if (existingBoxes.length > 5) {
+    existingBoxes[existingBoxes.length - 1].remove();
+  }
+
+  let newBoxes = data.filter(event => !alreadyAcknowledgedTimestamps.includes(event.timestamp));
+
+  // reverse the array so the latest event is at the top
+  newBoxes = newBoxes.reverse();
+
+  newBoxes.forEach(event => {
+    const eventBox = document.createElement("div");
+    eventBox.classList.add("event-box", "animate-in");
+    eventBox.dataset.timestamp = event.timestamp;
+
+    const profile_image = event.helix_user.data[0] ? event.helix_user.data[0].profile_image_url : "";
+
+    let displayMessage = event.message;
+
+    switch (event.type) {
+      case "channel.cheer": {
+        if (event.value < 100) {
+          displayMessage = `Cheered <span color="<%= data.options['1_bit_color'] %>">x${event.value}</span>`;
+        } else if (event.value < 1000) {
+          displayMessage = `Cheered <span color="<%= data.options['100_bit_color'] %>">x${event.value}</span>`;
+        } else if (event.value < 5000) {
+          displayMessage = `Cheered <span color="<%= data.options['1000_bit_color'] %>">x${event.value}</span>`;
+        } else if (event.value < 10000) {
+          displayMessage = `Cheered <span color="<%= data.options['5000_bit_color'] %>">x${event.value}</span>`;
+        } else {
+          displayMessage = `Cheered <span color="<%= data.options['10000_bit_color'] %>">x${event.value}</span>`;
+        }
+      }
+    }
+
+    eventBox.innerHTML = `
+      <div class="background" style="background-image: url(${profile_image});"></div>
+      <div class="left avatar-container">
+        <img src="${profile_image}" alt="" class="avatar">
+        <div class="fallback_image"></div>
+      </div>
+      <div class="center">
+        <div class="text">
+          <div class="username">${event.user_name}</div>
+          <div class="message">${displayMessage}</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="notification_tag">+${formatSeconds(Math.floor(event.duration)).string}</div>
+        <div class="timestamp">${timeAgo(event.timestamp)}</div>
+      </div>
+    `;
+
+    setInterval(() => {
+      const timestamp = eventBox.querySelector(".timestamp");
+      const timeAgoString = timeAgo(event.timestamp);
+      timestamp.textContent = timeAgoString;
+    }, 1000);
+
+    eventBoxContainer.prepend(eventBox);
+  });
+  
+  alreadyAcknowledgedTimestamps.push(...newBoxes.map(event => event.timestamp));
+
+  // page css
+
+  document.querySelector(".eventbox-container").style.gap = "<%= data.options.vertical_gap %>px";
+
+  const boxes = document.querySelectorAll(".event-box");
+  boxes.forEach((box, index) => {
+    box.style.backgroundColor = "<%= data.options.card_background_color %>";
+  });
+
+  const text = document.querySelectorAll(".text");
+  const timestamp = document.querySelectorAll(".timestamp");
+  text.forEach((text, index) => {
+    text.style.color = "<%= data.options.text_color %>";
+  });
+  timestamp.forEach((time, index) => {
+    time.style.color = "<%= data.options.text_color %>";
+  });
+
+  const notification_tag = document.querySelectorAll(".notification_tag");
+  notification_tag.forEach((tag, index) => {
+    tag.style.color = "<%= data.options.notif_tag_text_color %>";
+    tag.style.backgroundColor = "<%= data.options.notif_tag_color %>";
+  });
+}
+
+setInterval(async () => {
+  if (Date.now() - lastDataUpdate > 1500) {
+    const response = await fetch("/api/events");
+    const newData = await response.json();
+    data = newData;
+    lastDataUpdate = Date.now();
+
+    update(data);
+  };
+}, 1000);
+
+update(data);
+
+function formatSeconds(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  let string = "";
+
+  if (hours > 0) {
+    string += `${String(hours).padStart(2, "0")}:`;
+  }
+
+  string += `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+
+  return {
+    hours,
+    minutes,
+    seconds: remainingSeconds,
+    string
+  };
+}
+
+// convert a time to "... seconds ago", "... minutes ago", "... hours ago"
+function timeAgo(time) {
+  const now = new Date();
+  const timeDate = new Date(time);
+  const seconds = Math.floor((now - timeDate) / 1000);
+
+  let interval = Math.floor(seconds / 31536000);
+
+  if (interval >= 1) {
+    return `${interval} years ago`;
+  }
+
+  interval = Math.floor(seconds / 2592000);
+
+  if (interval >= 1) {
+    return `${interval} months ago`;
+  }
+
+  interval = Math.floor(seconds / 86400);
+
+  if (interval >= 1) {
+    return `${interval} days ago`;
+  }
+
+  interval = Math.floor(seconds / 3600);
+
+  if (interval >= 1) {
+    return `${interval} hours ago`;
+  }
+
+  interval = Math.floor(seconds / 60);
+
+  if (interval > 1) {
+    return `${interval} minutes ago`;
+  } else if (interval === 1) {
+    return `${interval} minute ago`;
+  }
+
+  return `${Math.floor(seconds)} seconds ago`;
+}
+
+// Reload the page every 3 minutes
+// incase any data is out of sync
+// or the page is stuck
+// or the page config has changed
+setInterval(() => {
+  document.location.reload();
+}, 3 * 1000 * 60);
+</script>
+</html>

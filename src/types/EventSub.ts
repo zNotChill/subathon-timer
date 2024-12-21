@@ -92,6 +92,12 @@ export type MessageEvent = {
   is_gift?: boolean,
   amount?: number,
   viewers?: number,
+  to_broadcaster_user_id?: string,
+  to_broadcaster_user_login?: string,
+  to_broadcaster_user_name?: string,
+  from_broadcaster_user_id?: string,
+  from_broadcaster_user_login?: string,
+  from_broadcaster_user_name?: string,
 }
 
 export type DescribedSubscriptionType = {

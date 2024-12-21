@@ -1,7 +1,8 @@
 import { Data } from "./Data.ts";
 import { Log } from "./Logger.ts";
-import { dataManager } from "./Manager.ts";
+import { dataManager, twitchManager } from "./Manager.ts";
 import { MessageEvent } from "./types/EventSub.ts";
+import { HelixUser } from "./types/Helix.ts";
 import { EventType, Rate, Event } from "./types/Subathon.ts";
 export class SubathonManager {
   data: Data;
@@ -35,6 +36,7 @@ export class SubathonManager {
         base_rate: 1,
         user_id: "",
         user_name: "",
+        helix_user: {} as HelixUser
       }
     ];
     this.globalMultiplier = 1;
@@ -128,7 +130,7 @@ export class SubathonManager {
     this.donations = donations;
   }
 
-  getRewardFromTwitchEvent(event: MessageEvent, type: EventType) {
+  async getRewardFromTwitchEvent(event: MessageEvent, type: EventType) {
     const eventValue: number = this.getMessageEventValue(event, type);
 
     const rates = this.getAllRatesFromType(type);
@@ -189,6 +191,14 @@ export class SubathonManager {
     //   donationValue = extraDonation;
     // }
 
+    let user_id = event.user_id;
+    let user_name = event.user_name;
+
+    if (type === "channel.raid") {
+      user_id = event.from_broadcaster_user_id || "";
+      user_name = event.from_broadcaster_user_name || "";
+    }
+
     this.addEvent({
       type: usedRate.type,
       value: eventValue,
@@ -198,8 +208,9 @@ export class SubathonManager {
       donation: donationValue,
       multiplier: this.globalMultiplier,
       base_rate: this.baseRate,
-      user_id: event.user_id,
-      user_name: event.user_name
+      user_id: user_id,
+      user_name: user_name,
+      helix_user: await twitchManager.getUserInfoFromName(user_name)
     });
 
     this.setTimerFromHistory();
@@ -207,14 +218,14 @@ export class SubathonManager {
     
     switch (type as EventType) {
       case "channel.cheer":
-        Log(`Received bit donation from ${event.user_name}. Cheered ${event.bits} bits!`, "SubathonManager");
+        Log(`Received bit donation from ${user_name}. Cheered ${event.bits} bits!`, "SubathonManager");
         break;
       case "channel.subscribe": {
-        Log(`Received TIER ${eventValue} subscription from ${event.user_name}.`, "SubathonManager");
+        Log(`Received TIER ${eventValue} subscription from ${user_name}.`, "SubathonManager");
         break;
       }
       case "donation": {
-        Log(`Received donation from ${event.user_name}.`, "SubathonManager");
+        Log(`Received donation from ${user_name}.`, "SubathonManager");
         break;
       }
     }
@@ -237,6 +248,7 @@ export class SubathonManager {
       base_rate: 1,
       user_id: "",
       user_name: "",
+      helix_user: {} as HelixUser
     });
 
     Log(`Timer has been paused at ${this.timer}.`, "SubathonManager");
@@ -258,6 +270,7 @@ export class SubathonManager {
       base_rate: 1,
       user_id: "",
       user_name: "",
+      helix_user: {} as HelixUser
     });
 
     Log(`Timer has been unpaused.`, "SubathonManager");
@@ -374,6 +387,7 @@ export class SubathonManager {
       base_rate: 1,
       user_id: "",
       user_name: "",
+      helix_user: {} as HelixUser
     });
   }
 
@@ -390,6 +404,7 @@ export class SubathonManager {
       base_rate: 1,
       user_id: "",
       user_name: "",
+      helix_user: {} as HelixUser
     });
   }
 
@@ -444,6 +459,7 @@ export class SubathonManager {
       base_rate: 1,
       user_id: "",
       user_name: "",
+      helix_user: {} as HelixUser
     });
   }
 
@@ -460,11 +476,17 @@ export class SubathonManager {
       base_rate: 1,
       user_id: "",
       user_name: "",
+      helix_user: {} as HelixUser
     });
   }
 
   getDonationCount() {
     return this.donations;
+  }
+
+  getRecentEvents(count: number = 5) {
+    // filter out system events
+    return this.sessionHistory.filter(event => event.user_name).slice(-count).reverse();
   }
 
   main() {
@@ -493,7 +515,6 @@ export class SubathonManager {
 
         this.uptime += 1;
       }
-
 
       // Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
     }, 1000);

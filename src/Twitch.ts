@@ -4,6 +4,7 @@ import { Log, Error } from "./Logger.ts";
 import { SubscriptionType } from "./types/EventSub.ts";
 import { SubathonManager } from "./Subathon.ts";
 import { dataManager } from "./Manager.ts";
+import { HelixUser } from "./types/Helix.ts";
 
 export class TwitchManager {
   access_token: string;
@@ -14,6 +15,8 @@ export class TwitchManager {
   user: User;
   code_user: User;
   ws: WebSocket | null;
+
+  cached_users: HelixUser[];
 
   logged_in: boolean;
   user_logged_in: boolean;
@@ -49,6 +52,8 @@ export class TwitchManager {
     this.user_logged_in = false;
 
     this.subathonManager = subathonManager;
+
+    this.cached_users = [];
   }
 
   async getAccessToken() {
@@ -128,6 +133,13 @@ export class TwitchManager {
   }
 
   async getUserInfoFromName(name: string) {
+    if (this.cached_users.length > 0) {
+      const user = this.cached_users.find((user) => user.login === name);
+      if (user) {
+        return user;
+      }
+    }
+
     const response = await fetch(`https://api.twitch.tv/helix/users?login=${name}`, {
       headers: {
         "Client-ID": this.data.config.client.id,

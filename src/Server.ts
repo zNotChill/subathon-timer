@@ -426,6 +426,11 @@ router.get("/api/timer", (ctx) => {
   ctx.response.body = subathonManager.getRelevantInfo();
 });
 
+router.get("/api/events", (ctx) => {
+  ctx.response.status = 200;
+  ctx.response.body = subathonManager.getRecentEvents();
+});
+
 router.get("/api/commands", (ctx) => {
   const commandsArray = Array.from(commands.values());
 

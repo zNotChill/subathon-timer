@@ -7,6 +7,7 @@
 // in the data.
 
 import { SubscriptionType } from "./EventSub.ts";
+import { HelixUser } from "./Helix.ts";
 
 export type EventType = SubscriptionType | 
   "config_change" |
@@ -58,6 +59,7 @@ export type Event = {
   base_rate: number,
   user_id: string,
   user_name: string,
+  helix_user: HelixUser,
   tier?: number,
 }
 
