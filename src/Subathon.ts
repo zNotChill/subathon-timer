@@ -116,8 +116,19 @@ export class SubathonManager {
   setTimerFromHistory() {
     let duration = 0;
 
-    this.sessionHistory.forEach(event => {
-      duration += event.duration * event.multiplier * event.base_rate;
+    const timeEvents = this.sessionHistory.filter(event => event.duration > 0);
+
+    timeEvents.forEach(event => {
+      let mult = 1;
+      let timeSincePreviousEvent = Math.abs(event.timestamp - this.sessionHistory[this.sessionHistory.indexOf(event) - 1]?.timestamp) / 1000;
+
+      if (timeSincePreviousEvent < 0 || !timeSincePreviousEvent) timeSincePreviousEvent = 0;
+
+      // console.log(`TIME FUNC`, mult, timeSincePreviousEvent, event.duration, event.multiplier, event.base_rate);
+
+      if (event.type === "time_removed") mult = -1
+
+      duration += ((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent;
     });
 
     this.timer = duration;
@@ -126,9 +137,16 @@ export class SubathonManager {
   setDonationsFromHistory() {
     let donations = 0;
 
-    this.sessionHistory.forEach(event => {
-      if (event.donation && event.donation > 0)
-        donations += event.donation * event.multiplier * event.base_rate;
+    const donationEvents = this.sessionHistory.filter(event => event.donation > 0);
+
+    donationEvents.forEach(event => {
+      let mult = 1;
+
+      if (event.type === "money_removed") mult = -1;
+
+      if (event.donation && event.donation > 0) {
+        donations += ((event.donation * event.multiplier * event.base_rate) * mult);
+      }
     });
 
     this.donations = donations;
@@ -393,6 +411,7 @@ export class SubathonManager {
       user_name: "",
       helix_user: {} as HelixUser
     });
+    this.setTimerFromHistory();
   }
 
   removeTimeFromTimer(time: number) {
@@ -402,7 +421,7 @@ export class SubathonManager {
       value: time,
       timestamp: Date.now(),
       rate: {} as Rate,
-      duration: time,
+      duration: -time,
       donation: 0,
       multiplier: 1,
       base_rate: 1,
@@ -410,6 +429,7 @@ export class SubathonManager {
       user_name: "",
       helix_user: {} as HelixUser
     });
+    this.setTimerFromHistory();
   }
 
   addGoal(goal: number, title: string) {
@@ -467,6 +487,7 @@ export class SubathonManager {
       user_name: "",
       helix_user: {} as HelixUser
     });
+    this.setDonationsFromHistory();
   }
 
   removeMoneyFromDonationCount(amount: number) {
@@ -477,13 +498,14 @@ export class SubathonManager {
       timestamp: Date.now(),
       rate: {} as Rate,
       duration: 0,
-      donation: amount,
+      donation: -amount,
       multiplier: 1,
       base_rate: 1,
       user_id: "",
       user_name: "",
       helix_user: {} as HelixUser
     });
+    this.setDonationsFromHistory();
   }
 
   getDonationCount() {
