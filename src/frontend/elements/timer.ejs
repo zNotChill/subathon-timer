@@ -12,6 +12,10 @@
   --font-size: 1em;
   --font-family: 'Inter', sans-serif;
   --font-weight: 400;
+
+  --shadow: #484848 1px 0 10px;
+  --outline-width: 2px;
+  --outline-color: #d2d2d2;
 }
 
 * {
@@ -52,6 +56,9 @@ html {
   font-size: 70px;
   font-weight: 600;
   display: flex;
+  text-shadow: var(--shadow);
+  -webkit-text-stroke-width: var(--outline-width);
+  -webkit-text-stroke-color: var(--outline-color);
 }
 
 .timer .text .colon {
@@ -69,10 +76,14 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 2s ease-in-out;
 }
 
 .notification_user {
   font-family: "Chivo Mono", monospace;
+  text-shadow: var(--shadow);
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: #adadad;
 }
 .notification_tag {
   padding: 5px 9px;
@@ -132,6 +143,9 @@ html {
   font-size: 24px;
   font-weight: bold;
   align-items: center;
+  text-shadow: var(--shadow);
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: #adadad;
 }
 
 .next-goal .text {
@@ -176,11 +190,42 @@ html {
   width: 100%;
 }
 
+.fade-in {
+  animation: fadeIn 0.5s forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+  50% {
+    transform: translateY(0px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
 </style>
 <body>
   <div class="subathon-container">
     <div class="timer">
-      <div class="notification-container">
+      <div class="notification-container fade-in">
         <div class="notification_user">
           hpqyy
         </div>
@@ -257,6 +302,13 @@ const currencies = {
 let data = <%- JSON.stringify(info) %>;
 let lastDataUpdate = Date.now();
 let lastTimerUpdate = Date.now();
+const fadeOutTime = 15;
+
+let lastEvent = {
+  timestamp: 0,
+  event: {},
+  lifetime: 0
+}
 
 function update() {
   const timers = document.querySelectorAll('.timer');
@@ -292,7 +344,14 @@ function update() {
     timer.querySelector('.text .seconds').innerText = String(Math.floor(formatSeconds(data.timer).seconds)).padStart(2, '0');
   });
 
-  if (data.most_recent_event) {
+  // if (lastEvent.timestamp + fadeOutTime < Date.now()) {
+  //   notifications.forEach(notification => {
+  //     notification.classList.remove('fade-in');
+  //     notification.classList.add('fade-out');
+  //   });
+  // }
+
+  if (data.most_recent_event && lastEvent.lifetime < fadeOutTime) {
     notifications.forEach(notification => {
       notification.style.opacity = 1;
       notification.style.top = "calc(-15px - <%= data.options.sub_notif_vertical_gap %>px)";
@@ -313,7 +372,8 @@ function update() {
     });
   } else {
     notifications.forEach(notification => {
-      notification.style.opacity = 0;
+      notification.classList.remove('fade-in');
+      notification.classList.add('fade-out');
     });
   }
 
@@ -368,6 +428,24 @@ setInterval(async () => {
     const response = await fetch('/api/timer');
     data = await response.json();
     lastDataUpdate = Date.now();
+
+    if (
+      JSON.stringify(data.most_recent_event) !== JSON.stringify(lastEvent.event)
+    ) {
+      console.log('New event:', data.most_recent_event);
+      lastEvent = {
+        timestamp: Date.now(),
+        event: data.most_recent_event,
+        lifetime: 0
+      }
+
+      document.querySelectorAll('.notification-container').forEach(notification => {
+        if (!notification.classList.contains('fade-in')) {
+          notification.classList.remove('fade-out');
+          notification.classList.add('fade-in');
+        }
+      });
+    }
   };
 
   // Even if the data isn't synced properly,
@@ -378,6 +456,7 @@ setInterval(async () => {
     data.timer = data.timer - 1;
   }
 
+  lastEvent.lifetime += 1;
   update();
 }, 1000);
 

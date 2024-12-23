@@ -468,6 +468,12 @@ router.get("/element", async (ctx) => {
   }
 })
 
+router.get("/tip", (ctx) => {
+  ctx.response.redirect(
+    globalData.config.tip_url
+  )
+})
+
 /*
   API
 */

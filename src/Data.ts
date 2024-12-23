@@ -43,6 +43,7 @@ export type Config = {
   bot_prefix: string,
   bot_authorized_users: string[],
   page_url: string,
+  tip_url: string,
 }
 
 export type AppData = {
@@ -98,7 +99,8 @@ export const globalData: Data = {
     verify_signature: true,
     bot_prefix: "!",
     bot_authorized_users: [],
-    page_url: "https://www.example.com"
+    page_url: "https://www.example.com",
+    tip_url: "https://www.example.com/tip"
   },
   app: {
     first_run: true,

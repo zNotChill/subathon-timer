@@ -65,6 +65,7 @@ html {
   border-radius: 25px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .event-box.animate-in {
@@ -111,10 +112,14 @@ html {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: end;
+  align-items: end!important;
   height: 100px;
+  width: 200px;
   padding: 10px 20px;
   z-index: 3;
+  text-align: right;
+  position: absolute;
+  right: 20px;
 }
 
 .avatar-container {
@@ -240,15 +245,15 @@ function update() {
     switch (event.type) {
       case "channel.cheer": {
         if (event.value < 100) {
-          displayMessage = `Cheered <span color="<%= data.options['1_bit_color'] %>">x${event.value}</span>`;
+          displayMessage = `Cheered <span style="color: <%= data.options['1_bit_color'] %>!important">x${event.value}</span>`;
         } else if (event.value < 1000) {
-          displayMessage = `Cheered <span color="<%= data.options['100_bit_color'] %>">x${event.value}</span>`;
+          displayMessage = `Cheered <span style="color: <%= data.options['100_bit_color'] %>!important">x${event.value}</span>`;
         } else if (event.value < 5000) {
-          displayMessage = `Cheered <span color="<%= data.options['1000_bit_color'] %>">x${event.value}</span>`;
+          displayMessage = `Cheered <span style="color: <%= data.options['1000_bit_color'] %>!important">x${event.value}</span>`;
         } else if (event.value < 10000) {
-          displayMessage = `Cheered <span color="<%= data.options['5000_bit_color'] %>">x${event.value}</span>`;
+          displayMessage = `Cheered <span style="color: <%= data.options['5000_bit_color'] %>!important">x${event.value}</span>`;
         } else {
-          displayMessage = `Cheered <span color="<%= data.options['10000_bit_color'] %>">x${event.value}</span>`;
+          displayMessage = `Cheered <span style="color: <%= data.options['10000_bit_color'] %>!important">x${event.value}</span>`;
         }
       }
     }
@@ -284,8 +289,9 @@ function update() {
 
   // page css
 
-  document.querySelector(".eventbox-container").style.gap = "<%= data.options.vertical_gap %>px";
-
+  document.querySelectorAll(".event-box").forEach((box, index) => {
+    box.style.marginBottom = "<%= data.options.vertical_gap %>px";
+  });
   const boxes = document.querySelectorAll(".event-box");
   boxes.forEach((box, index) => {
     box.style.backgroundColor = "<%= data.options.card_background_color %>";
