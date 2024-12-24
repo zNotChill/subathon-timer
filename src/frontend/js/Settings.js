@@ -1,4 +1,3 @@
-let currentTooltip = null;
 let currentModal = null;
 
 const configSettings = [
@@ -294,19 +293,6 @@ document.querySelectorAll(".sidebar-option").forEach((tab) => {
     tab.classList.add("active");
   });
 });
-
-function showTooltip(text, element) {
-  if (currentTooltip) {
-    currentTooltip.remove();
-  }
-
-  const tooltip = document.createElement("div");
-  tooltip.classList.add("tooltip");
-
-  tooltip.innerText = text;
-  element.appendChild(tooltip);
-  currentTooltip = tooltip;
-}
 
 function confirmationModal(text, description, confirmCallback) {
   if (currentModal) {

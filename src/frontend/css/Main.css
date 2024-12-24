@@ -22,7 +22,7 @@
   --font-family: 'Inter', sans-serif;
   --font-weight: 400;
   
-  --sidebar-width: 300px;
+  --sidebar-width: 250px;
   --gap: 20px;
   --margin: 20px;
 
@@ -115,7 +115,7 @@ body.settings_page .settings-container {
 
 .sidebar {
   background-color: #0b1213;
-  width: 300px;
+  width: var(--sidebar-width);
   height: 100vh;
   position: fixed;
   
@@ -139,6 +139,7 @@ body.settings_page .settings-container {
   transition: background-color var(--transition-time);
   cursor: pointer;
   user-select: none;
+  position: relative;
 }
 
 
@@ -307,7 +308,7 @@ icon svg {
   width: 100%;
   height: 100%;
   stroke: var(--lighter-text);
-  transition: all var(--transition-time);
+  transition: stroke var(--transition-time);
 }
 
 /* Switch */
@@ -384,6 +385,7 @@ input:checked + .slider:before {
   padding: 10px;
   max-width: 755px;
   overflow: scroll;
+  z-index: 10000;
 }
 
 /* Modals */
@@ -459,15 +461,16 @@ button.button-red {
 /* Footer */
 
 .footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: var(--sidebar-width);
-  width: 100vh;
+  width: calc(100% - var(--sidebar-width));
   height: 50px;
   display: flex;
   align-items: center;
   z-index: 1;
   color: var(--lighter-text);
+  opacity: 0.5;
 
   padding: 0 20px;
   user-select: none;
@@ -504,6 +507,40 @@ td.center {
 
 /* i hate mobile */
 
+@media (max-width: 1140px) {
+  .rate-container {
+    width: calc(100vw - var(--sidebar-width) - 35px)!important;
+    height: 100px!important;
+  }
+
+  .rate-container .rate-symbol {
+    font-size: 30px;
+    width: 45px;
+    height: 45px;
+  }
+  .rate-container .rate-symbol img, .rate-container .rate-symbol svg {
+    width: 30px!important;
+    height: 30px!important;
+  }
+
+  .rate-container .rate-title {
+    font-size: 20px;
+  }
+
+  .rate-container .left {
+    height: 70px!important;
+    width: 75px!important;
+  }
+
+  .rate-container .center {
+    grid-area: unset!important;
+  }
+  .rate-container .center .grid {
+    grid-template-columns: unset!important;
+    height: fit-content;
+  }
+}
+
 @media (max-width: 900px) {
   .option_text #text {
     display: none;
@@ -525,6 +562,12 @@ td.center {
     padding: 5px;
     font-size: 0.9em;
   }
+
+  .tooltip {
+    top: -2px;
+    left: var(--sidebar-width);
+    height: min-content;
+  }
 }
 
 /* auto font size below 600px */
@@ -533,6 +576,98 @@ td.center {
   tbody tr:nth-child(1) {
     font-size: 0.8em;
   }
+
+  i.time_remaining {
+    font-size: 12px;
+  }
+
+  .rate-container {
+    width: calc(100vw - 10px)!important;
+    height: 85px!important;
+  }
+
+  .rate-container .left {
+    width: 75px!important;
+    height: 75px!important;
+  }
+
+  .settings-container {
+    margin-top: 40px!important;
+  }
+
+  table.settings-container {
+    margin-top: 60px!important;
+  }
+
+  :root {
+    --sidebar-width: -15px;
+  }
+
+  .sidebar {
+    padding: 0px;
+    height: 36px;
+    width: 100vw;
+  }
+
+  .sidebar-top {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .sidebar-bottom {
+    display: none;
+  }
+
+  .sidebar-splitter {
+    display: none;
+  }
+
+  .icon {
+    height: 24px;
+  }
+
+  .rate-container .rate-title {
+    font-size: 16px;
+  }
+
+  .rate-container .grid-element {
+    font-size: 12px;
+  }
+
+  table.tr td {
+    font-size: 0.5em;
+  }
+
+  table.settings-container {
+    left: 5px;
+  }
+
+  .tooltip {
+    bottom: 0;
+    top: unset;
+    left: 0;
+    width: 100vw;
+    height: 50px;
+    padding: 10px;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 500px) {
+  .icon {
+    height: 16px;
+    width: 16px;
+  }
+
+  .icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  td {
+    font-size: 0.6em;
+  }
+  
 }
 
 /* rates */
