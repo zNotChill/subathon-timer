@@ -198,4 +198,12 @@ document.querySelectorAll(".sidebar-option").forEach((tab) => {
     });
     tab.classList.add("active");
   });
+  tab.addEventListener("touchend", () => {
+    renderLeaderboard(tabName);
+
+    document.querySelectorAll(".sidebar-option[tab]").forEach((tab) => {
+      tab.classList.remove("active");
+    });
+    tab.classList.add("active");
+  });
 });

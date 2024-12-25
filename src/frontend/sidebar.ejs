@@ -72,6 +72,7 @@
 // add mobile compatibility
 document.querySelectorAll('.sidebar-option').forEach((el) => {
   el.addEventListener('touchend', () => {
+    if(!el.hasAttribute("value")) return;
     window.location.href = el.href;
   });
 });

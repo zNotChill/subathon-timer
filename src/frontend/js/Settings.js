@@ -292,6 +292,14 @@ document.querySelectorAll(".sidebar-option").forEach((tab) => {
     });
     tab.classList.add("active");
   });
+  tab.addEventListener("touchend", () => {
+    renderSettings(tabName);
+
+    document.querySelectorAll(".sidebar-option[tab]").forEach((tab) => {
+      tab.classList.remove("active");
+    });
+    tab.classList.add("active");
+  });
 });
 
 function confirmationModal(text, description, confirmCallback) {
@@ -326,6 +334,10 @@ function confirmationModal(text, description, confirmCallback) {
     confirmCallback("confirm");
     modal.remove();
   });
+  modalConfirm.addEventListener("touchend", () => {
+    confirmCallback("confirm");
+    modal.remove();
+  });
   modalButtons.appendChild(modalConfirm);
 
   const modalCancel = document.createElement("button");
@@ -333,6 +345,10 @@ function confirmationModal(text, description, confirmCallback) {
   modalCancel.innerText = "Cancel";
   modalCancel.classList.add("no-round");
   modalCancel.addEventListener("click", () => {
+    confirmCallback("cancel");
+    modal.remove();
+  });
+  modalCancel.addEventListener("touchend", () => {
     confirmCallback("cancel");
     modal.remove();
   });
