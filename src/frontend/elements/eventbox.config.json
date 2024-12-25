@@ -10,6 +10,11 @@
     "10000_bit_color": "#B52F2A",
     "notif_tag_color": "#59B34D",
     "notif_tag_text_color": "#C0E2BB",
-    "vertical_gap": 20
+    "vertical_gap": 20,
+    "tier_1_sub_color": "#9466B5",
+    "tier_2_sub_color": "#4582B5",
+    "tier_3_sub_color": "#B5B545",
+    "donation_currency_color": "#518F49",
+    "donation_amount_color": "#78B56F"
   }
 }

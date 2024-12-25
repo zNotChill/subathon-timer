@@ -502,6 +502,34 @@ router.get("/api/commands", (ctx) => {
   };
 });
 
+router.post("/api/setuptime", authMiddleware, async (ctx) => {
+  if (!ctx.request.hasBody) {
+    ctx.response.status = 400;
+    ctx.response.body = "No body provided";
+    return;
+  }
+
+  const data = await ctx.request.body.json();
+
+  if (!data.time) {
+    ctx.response.status = 400;
+    ctx.response.body = "No time provided";
+    return;
+  }
+
+  const time = parseInt(data.time);
+
+  if (isNaN(time)) {
+    ctx.response.status = 400;
+    ctx.response.body = "Invalid time provided";
+    return;
+  }
+
+  subathonManager.setUptime(time);
+  ctx.response.status = 200;
+  ctx.response.body = "OK";
+}
+
 app.use(router.routes());
 app.listen({
   port: globalData.config.port,

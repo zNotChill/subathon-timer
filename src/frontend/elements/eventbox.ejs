@@ -216,6 +216,7 @@ const currencies = {
 }
 
 let data = <%- JSON.stringify(info) %>;
+let events = {};
 let lastDataUpdate = 0;
 let alreadyAcknowledgedTimestamps = [];
 
@@ -228,7 +229,7 @@ function update() {
     existingBoxes[existingBoxes.length - 1].remove();
   }
 
-  let newBoxes = data.filter(event => !alreadyAcknowledgedTimestamps.includes(event.timestamp));
+  let newBoxes = events.filter(event => !alreadyAcknowledgedTimestamps.includes(event.timestamp));
 
   // reverse the array so the latest event is at the top
   newBoxes = newBoxes.reverse();
@@ -255,6 +256,23 @@ function update() {
         } else {
           displayMessage = `Cheered <span style="color: <%= data.options['10000_bit_color'] %>!important">x${event.value}</span>`;
         }
+        break;
+      }
+      case "channel.subscribe": {
+        if (event.value === 1) {
+          displayMessage = `Subscribed at <span style="color: <%= data.options['tier_1_sub_color'] %>!important">Tier 1</span>`;
+        } else if (event.value === 2) {
+          displayMessage = `Subscribed at <span style="color: <%= data.options['tier_2_sub_color'] %>!important">Tier 2</span>`;
+        } else if (event.value === 3) {
+          displayMessage = `Subscribed at <span style="color: <%= data.options['tier_3_sub_color'] %>!important">Tier 3</span>`;
+        }
+        break;
+      }
+      case "donation": {
+        console.log(event);
+        
+        displayMessage = `Donated <span style="color: <%= data.options['donation_currency_color'] %>!important">${currencies[data.currency] || "$"}</span><span style="color: <%= data.options['donation_amount_color'] %>!important">${event.value}</span>`;
+        break;
       }
     }
 
@@ -317,10 +335,10 @@ setInterval(async () => {
   if (Date.now() - lastDataUpdate > 1500) {
     const response = await fetch("/api/events");
     const newData = await response.json();
-    data = newData;
-    lastDataUpdate = Date.now();
+    events = newData;
+    lastEventUpdate = Date.now();
 
-    update(data);
+    update(events);
   };
 }, 1000);
 
