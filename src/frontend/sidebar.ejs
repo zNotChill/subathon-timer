@@ -67,3 +67,12 @@
     <div id="text">Donate!</div>
   </div>
 </a>
+
+<script>
+// add mobile compatibility
+document.querySelectorAll('.sidebar-option').forEach((el) => {
+  el.addEventListener('touchend', () => {
+    window.location.href = el.href;
+  });
+});
+</script>
