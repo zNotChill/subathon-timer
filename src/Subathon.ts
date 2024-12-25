@@ -572,6 +572,10 @@ export class SubathonManager {
     this.data = data;
   }
 
+  setUptime(uptime: number) {
+    this.uptime = uptime;
+  }
+
   main() {
     Log("Subathon has started!", "SubathonManager");
 

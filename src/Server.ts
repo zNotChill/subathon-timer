@@ -528,7 +528,7 @@ router.post("/api/setuptime", authMiddleware, async (ctx) => {
   subathonManager.setUptime(time);
   ctx.response.status = 200;
   ctx.response.body = "OK";
-}
+});
 
 app.use(router.routes());
 app.listen({
