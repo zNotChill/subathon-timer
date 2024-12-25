@@ -508,6 +508,70 @@ export class SubathonManager {
     this.setDonationsFromHistory();
   }
 
+  setTimer(time: number) {
+    this.addEvent({
+      type: "time_removed",
+      value: this.timer,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: this.timer,
+      donation: 0,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+      helix_user: {} as HelixUser
+    })
+
+    this.addEvent({
+      type: "time_added",
+      value: time,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: time,
+      donation: 0,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+      helix_user: {} as HelixUser
+    });
+
+    this.timer = time;
+  }
+
+  setMoney(amount: number) {
+    this.addEvent({
+      type: "money_removed",
+      value: this.donations,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: 0,
+      donation: this.donations,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+      helix_user: {} as HelixUser
+    })
+
+    this.addEvent({
+      type: "money_added",
+      value: amount,
+      timestamp: Date.now(),
+      rate: {} as Rate,
+      duration: 0,
+      donation: amount,
+      multiplier: 1,
+      base_rate: 1,
+      user_id: "",
+      user_name: "",
+      helix_user: {} as HelixUser
+    });
+
+    this.donations = amount;
+  }  
+  
   getDonationCount() {
     return this.donations;
   }
@@ -582,7 +646,6 @@ export class SubathonManager {
     Log(`Timer is at ${this.timer} seconds.`, "SubathonManager");
     Log(`Donations are at ${this.donations} ${this.data.subathon_config.currency}.`, "SubathonManager");
 
-    // Start the timer
     const _interval = setInterval(() => {
       if (!this.timer_paused) {
         if (this.timer <= 0) {
@@ -600,8 +663,6 @@ export class SubathonManager {
         }
 
       }
-
-      // Log(`Timer is now at ${this.timer} seconds.`, "SubathonManager");
     }, 1000);
   }
 }
