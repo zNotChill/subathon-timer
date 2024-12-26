@@ -111,6 +111,10 @@ export class SubathonManager {
     return this.timer;
   }
 
+  getEstimatedEnd() {
+    return Date.now() + (this.timer * 1000);
+  }
+
   setGlobalMultiplier(multiplier: number) {
     this.globalMultiplier = multiplier;
   }

@@ -17,6 +17,7 @@ import { AddMoneyCommand } from "./bot/commands/AddMoney.ts";
 import { SetUptimeCommand } from "./bot/commands/SetUptime.ts";
 import { SetTimeCommand } from "./bot/commands/SetTime.ts";
 import { SetMoneyCommand } from "./bot/commands/SetMoney.ts";
+import { EstimatedEndCommand } from "./bot/commands/EstimatedEnd.ts";
 
 export class BotManager {
   channel: Channel | undefined;
@@ -111,3 +112,4 @@ commands.set(AddMoneyCommand.name, AddMoneyCommand);
 commands.set(SetUptimeCommand.name, SetUptimeCommand);
 commands.set(SetTimeCommand.name, SetTimeCommand);
 commands.set(SetMoneyCommand.name, SetMoneyCommand);
+commands.set(EstimatedEndCommand.name, EstimatedEndCommand);
