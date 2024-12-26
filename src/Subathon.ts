@@ -214,7 +214,7 @@ export class SubathonManager {
           durationValue = (eventValue * usedRate.time_per);
         }
         if (usedRate.money_per) {
-          donationValue = (eventValue * usedRate.money_per);
+          donationValue = (eventValue);
         }
         break;
       case "set":
