@@ -172,7 +172,7 @@ export class SubathonManager {
       if (event.type === "money_removed") mult = -1;
 
       if (event.donation && event.donation > 0) {
-        donations += ((event.donation * event.multiplier * event.base_rate) * mult);
+        donations += ((event.donation) * mult);
       }
     });
 
@@ -214,7 +214,7 @@ export class SubathonManager {
           durationValue = (eventValue * usedRate.time_per);
         }
         if (usedRate.money_per) {
-          donationValue = usedRate.money_per
+          donationValue = (eventValue * usedRate.money_per);
         }
         break;
       case "set":
