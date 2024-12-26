@@ -1,6 +1,7 @@
 import { Channel } from "https://deno.land/x/tmi@v1.0.6/mod.ts";
 import { Command } from "../../Bot.ts";
 import { subathonManager } from "../../Manager.ts";
+import { formattedDurationToSeconds } from "../../utils/Time.ts";
 
 export const AddTimeCommand: Command = {
   name: "addtime",
@@ -23,12 +24,21 @@ export const AddTimeCommand: Command = {
     
     let duration: number | string = args[0];
 
-    if (isNaN(parseFloat(duration))) {
+    // its a time format (HH:MM:SS) / (MM:SS)
+    if (duration.includes(":")) {
+      let subtract = false;
+      if (duration.startsWith("-")) subtract = true;
+
+      duration = duration.replace("-", "");
+      duration = formattedDurationToSeconds(duration) * (subtract ? -1 : 1);
+    }
+
+    if (isNaN(parseFloat(duration.toString()))) {
       channel.send(`@${user}: please provide a valid duration.`);
       return;
     }
 
-    duration = parseInt(duration);
+    duration = parseInt(duration.toString());
 
     if (duration < 0 && subathonManager.getTimer() - Math.abs(duration) < 0) {
       channel.send(`@${user}: cannot remove ${duration} seconds from the timer. The timer would go below 0.`);

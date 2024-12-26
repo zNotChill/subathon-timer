@@ -696,6 +696,8 @@ export class SubathonManager {
         globalData.backup_info.donations = this.donations;
         globalData.backup_info.donation_goal = this.donation_goal;
         globalData.backup_info.base_rate = this.baseRate;
+
+        globalData.subathon_config.history = this.sessionHistory;
       }
     }, 1000);
   }

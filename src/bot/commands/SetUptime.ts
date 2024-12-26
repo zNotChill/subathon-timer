@@ -1,6 +1,7 @@
 import { Channel } from "https://deno.land/x/tmi@v1.0.6/mod.ts";
 import { Command } from "../../Bot.ts";
 import { subathonManager } from "../../Manager.ts";
+import { formattedDurationToSeconds } from "../../utils/Time.ts";
 
 export const SetUptimeCommand: Command = {
   name: "setuptime",
@@ -23,12 +24,20 @@ export const SetUptimeCommand: Command = {
     
     let duration: number | string = args[0];
 
-    if (isNaN(parseInt(duration))) {
+    if (duration.includes(":")) {
+      let subtract = false;
+      if (duration.startsWith("-")) subtract = true;
+
+      duration = duration.replace("-", "");
+      duration = formattedDurationToSeconds(duration) * (subtract ? -1 : 1);
+    }
+
+    if (isNaN(parseInt(duration.toString()))) {
       channel.send(`@${user}: please provide a valid duration.`);
       return;
     }
 
-    duration = parseInt(duration);
+    duration = parseInt(duration.toString());
 
     if (duration < 0) {
       channel.send(`@${user}: cannot set the uptime to a negative value.`);
