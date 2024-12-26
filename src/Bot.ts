@@ -46,7 +46,16 @@ export class BotManager {
       if (!message.startsWith(dataManager.getData().config.bot_prefix)) return;
 
       const command = message.split(" ")[0].substring(1);
-      const commandFunction = getCommand(command);
+      let commandFunction = getCommand(command);
+
+      // if the command isnt found, check if its an alias
+      if (!commandFunction) {
+        commands.forEach((cmd) => {
+          if (cmd.aliases?.includes(command)) {
+            commandFunction = cmd;
+          }
+        });
+      }
 
       if (
         !dataManager.getConfig().bot_authorized_users.includes(event.username)
@@ -84,6 +93,7 @@ export const getCommand = (name: string) => {
 
 export interface Command {
   name: string;
+  aliases?: string[];
   description: string;
   usage: string;
   parameters: {

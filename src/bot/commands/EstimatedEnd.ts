@@ -11,10 +11,10 @@ export const EstimatedEndCommand: Command = {
   execute: (_args: string[], channel: Channel, user: string) => {
     try {
       const estimatedEnd = subathonManager.getEstimatedEnd();
-      // timezones are hard
+      
       const date = new Date(estimatedEnd);
-      const dateString = date.toUTCString();
-      channel.send(`@${user}: the estimated end time of the subathon is ${dateString}.`);
+      const dateString = date.toLocaleString("en-US", { timeZone: "UTC" });
+      channel.send(`@${user}: the estimated end time of the subathon is ${dateString} UTC.`);
     } catch (error) {
       console.error(error);
       channel.send(`@${user}: an error occurred while running this command.`);
