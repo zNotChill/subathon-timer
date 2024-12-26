@@ -689,6 +689,13 @@ export class SubathonManager {
           this.globalMultiplier = 1;
         }
 
+        globalData.backup_info.global_multiplier = this.globalMultiplier;
+        globalData.backup_info.global_multiplier_countdown = this.globalMultiplierCountdown;
+        globalData.backup_info.timer = this.timer;
+        globalData.backup_info.uptime = this.uptime;
+        globalData.backup_info.donations = this.donations;
+        globalData.backup_info.donation_goal = this.donation_goal;
+        globalData.backup_info.base_rate = this.baseRate;
       }
     }, 1000);
   }
