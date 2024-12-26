@@ -390,10 +390,10 @@ function update() {
     progress_texts.forEach(progress_text => {
       progress_text.style.color = "<%= data.options.text_color %>";
 
-      progress_text.innerText = currencies[data.currency] + formatNumber(data.donations) + "/" + currencies[data.currency] + data.current_goal.goal;
+      progress_text.innerText = `${currencies[data.currency]}${formatNumber(data.donations)}/${currencies[data.currency]}${data.current_goal.goal}`;
     
       if (data.current_goal.goal === 0) {
-        progress_text.innerText = currencies[data.currency] + data.donations
+        progress_text.innerText = currencies[data.currency] + formatNumber(data.donations)
       }
 
       animateProgressBar(data.donations, data.current_goal.goal, 1);

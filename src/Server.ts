@@ -502,24 +502,34 @@ router.get("/api/commands", (ctx) => {
   };
 });
 
-router.post("/api/say", authMiddleware, async (ctx) => {
-  if (!ctx.request.hasBody) {
-    ctx.response.status = 400;
-    ctx.response.body = "No body provided";
-    return;
-  }
-
-  const data = await ctx.request.body.json();
-
-  if (!data.message) {
-    ctx.response.status = 400;
-    ctx.response.body = "No message provided";
-    return;
-  }
-
-  botManager.channel?.send(data.message);
+router.get("/api/allEvents", (ctx) => {
   ctx.response.status = 200;
-  ctx.response.body = "OK";
+  ctx.response.body = subathonManager.getEvents();
+});
+
+router.post("/api/say", authMiddleware, async (ctx) => {
+  try {
+    if (!ctx.request.hasBody) {
+      ctx.response.status = 400;
+      ctx.response.body = "No body provided";
+      return;
+    }
+  
+    const data = await ctx.request.body.json();
+  
+    if (!data.message) {
+      ctx.response.status = 400;
+      ctx.response.body = "No message provided";
+      return;
+    }
+  
+    botManager.channel?.send(data.message);
+    ctx.response.status = 200;
+    ctx.response.body = "OK";
+  } catch (_error) {
+    ctx.response.status = 500;
+    ctx.response.body = "An error occurred while sending the message.";
+  }
 });
 
 router.post("/api/setuptime", authMiddleware, async (ctx) => {

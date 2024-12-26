@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import * as cliffy from "https://deno.land/x/cliffy@v0.25.7/mod.ts";
-import { dataManager, subathonManager } from "./Manager.ts";
+import { dataManager, storageManager, subathonManager, twitchManager } from "./Manager.ts";
 import { StorageManager } from "./Storage.ts";
 import { server, setAuthOverride } from "./Server.ts";
 import { Data, DataManager } from "./Data.ts";
@@ -49,6 +49,23 @@ const run = new cliffy.Command()
       Log(`Data has been backed up to ${backupName}`, "Backup");
     }, config.backup_frequency * 1000);  
     
+    setInterval(async () => {
+      // refresh the access token every 30 minutes
+
+      const refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("refresh_token"));
+      const bot_refresh_data = await twitchManager.refreshAccessToken(await storageManager.get("bot_refresh_token"));
+
+      Log(`Access tokens refreshed.`, "Server");
+      twitchManager.access_token = refresh_data.access_token;
+      twitchManager.refresh_token = refresh_data.refresh_token;
+      storageManager.set("access_token", refresh_data.access_token);
+      storageManager.set("refresh_token", refresh_data.refresh_token);
+  
+      storageManager.set("bot_access_token", bot_refresh_data.access_token);
+      storageManager.set("bot_refresh_token", bot_refresh_data.refresh_token);
+      await dataManager.saveData();
+    }, 30 * 1000 * 60); // 30 minutes
+
     if (options.backup) {
       Log(`Loading backup file ${options.backup}...`, "Backup");
       const data = dataManager.loadBackup(options.backup);
@@ -58,10 +75,7 @@ const run = new cliffy.Command()
         return;
       }
 
-      subathonManager.setData(data as Data);
-      subathonManager.setTimerFromHistory();
-      subathonManager.setDonationsFromHistory();
-      console.log(subathonManager.data);
+      subathonManager.loadFromData(data);
       
       Log(`Backup file ${options.backup} loaded.`, "Backup");
     }

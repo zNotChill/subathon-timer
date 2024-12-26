@@ -239,7 +239,12 @@ function update() {
     eventBox.classList.add("event-box", "animate-in");
     eventBox.dataset.timestamp = event.timestamp;
 
-    const profile_image =! event.helix_user.error ? event.helix_user.data[0].profile_image_url : "";
+    let profile_image = "";
+    try {
+      profile_image = event.helix_user.data[0].profile_image_url;
+    } catch (error) {
+      console.log(event, error);
+    }
 
     let displayMessage = event.message;
 
@@ -272,6 +277,10 @@ function update() {
         console.log(event);
         
         displayMessage = `Donated <span style="color: <%= data.options['donation_currency_color'] %>!important">${currencies[data.currency] || "$"}</span><span style="color: <%= data.options['donation_amount_color'] %>!important">${event.value}</span>`;
+        break;
+      }
+      case "channel.raid": {
+        displayMessage = `Raided with <span style="color: <%= data.options['5000_bit_color'] %>!important">${event.value}</span> viewers`;
         break;
       }
     }

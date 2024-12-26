@@ -1,3 +1,4 @@
+import { globalData } from "./Data.ts";
 import { Data } from "./Data.ts";
 import { Log } from "./Logger.ts";
 import { dataManager, twitchManager } from "./Manager.ts";
@@ -20,12 +21,9 @@ export class SubathonManager {
   timer_paused: boolean;
   timer_paused_at: number;
 
-  constructor(optionalData?: Data) {
+  constructor() {
     this.data = dataManager.getData();
 
-    if (optionalData) {
-      this.data = optionalData;
-    }
     this.timer = 600; // 10 mins by default, should this be configurable?
     this.uptime = 0;
     this.sessionHistory = [
@@ -46,7 +44,6 @@ export class SubathonManager {
     this.globalMultiplier = 1;
     this.globalMultiplierCountdown = 0;
     this.baseRate = 1;
-
     this.donations = 0;
     this.donation_goal = 0;
 
@@ -54,8 +51,34 @@ export class SubathonManager {
     this.timer_paused_at = 0;
   }
 
+  loadFromData(data: Data) {
+    this.data = data;
+    this.sessionHistory = data.subathon_config.history;
+    this.globalMultiplier = data.backup_info.global_multiplier;
+    this.globalMultiplierCountdown = data.backup_info.global_multiplier_countdown;
+    this.baseRate = data.backup_info.base_rate;
+    this.timer = data.backup_info.timer;
+    this.uptime = data.backup_info.uptime;
+    console.log(this.uptime, data.backup_info);
+    
+    this.donations = data.backup_info.donations;
+    this.donation_goal = data.backup_info.donation_goal;
+
+    this.setTimerFromHistory();
+    this.setDonationsFromHistory();
+  }
+
   addEvent(event: Event) {
     this.sessionHistory.push(event);
+
+    globalData.subathon_config.history = this.sessionHistory;
+    globalData.backup_info.global_multiplier = this.globalMultiplier;
+    globalData.backup_info.global_multiplier_countdown = this.globalMultiplierCountdown;
+    globalData.backup_info.base_rate = this.baseRate;
+    globalData.backup_info.timer = this.timer;
+    globalData.backup_info.uptime = this.uptime;
+    globalData.backup_info.donations = this.donations;
+    globalData.backup_info.donation_goal = this.donation_goal;
 
     dataManager.setSubathonHistory(this.sessionHistory);
   }
@@ -136,7 +159,7 @@ export class SubathonManager {
 
   setDonationsFromHistory() {
     let donations = 0;
-
+    
     const donationEvents = this.sessionHistory.filter(event => event.donation > 0);
 
     donationEvents.forEach(event => {
@@ -582,7 +605,7 @@ export class SubathonManager {
   }
 
   getTopDonatingUsers(count: number = 10) {
-    const users = this.sessionHistory.filter(event => event.donation > 0 && event.user_name).reduce((acc, event) => {
+    const users = this.sessionHistory.filter(event => event.type === "donation" && event.user_name).reduce((acc, event) => {
       if (acc[event.user_name]) {
         acc[event.user_name] += event.donation;
       } else {
@@ -596,7 +619,7 @@ export class SubathonManager {
   }
 
   getTopTimeAddingUsers(count: number = 10) {
-    const users = this.sessionHistory.filter(event => event.duration > 0 && event.user_name).reduce((acc, event) => {
+    const users = this.sessionHistory.filter(event => event.type === "donation" && event.user_name).reduce((acc, event) => {
       if (acc[event.user_name]) {
         acc[event.user_name] += event.duration;
       } else {

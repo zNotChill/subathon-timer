@@ -4,6 +4,7 @@ export type Data = {
   config: Config,
   app: AppData,
   subathon_config: SubathonData,
+  backup_info: BackupInfo
 }
 
 export type Config = {
@@ -49,6 +50,16 @@ export type Config = {
 export type AppData = {
   first_run: boolean,
   ngrok_url: string,
+}
+
+export type BackupInfo = {
+  global_multiplier: number,
+  global_multiplier_countdown: number,
+  base_rate: number,
+  timer: number,
+  uptime: number,
+  donations: number,
+  donation_goal: number,
 }
 
 export const globalData: Data = {
@@ -112,6 +123,15 @@ export const globalData: Data = {
     history: [],
     donation_goals: [],
     uptime_goals: []
+  },
+  backup_info: {
+    global_multiplier: 1,
+    global_multiplier_countdown: 0,
+    base_rate: 0,
+    timer: 0,
+    uptime: 0,
+    donations: 0,
+    donation_goal: 0
   }
 }
 
@@ -245,7 +265,7 @@ export class DataManager {
     return backupName;
   }
 
-  static loadBackup(backupName: string) {
+  static loadBackup(backupName: string): Data {
     try {
       const backupData = Deno.readFileSync(`data/backups/${backupName}.json`);
       const backupText = new TextDecoder().decode(backupData);
@@ -254,9 +274,15 @@ export class DataManager {
       globalData.config = backup.config;
       globalData.app = backup.app;
       globalData.subathon_config = backup.subathon_config;
+      globalData.backup_info = backup.backup_info;
       return globalData;
     } catch (_error) {
-      return {};
+      return {
+        config: globalData.config,
+        app: globalData.app,
+        subathon_config: globalData.subathon_config,
+        backup_info: globalData.backup_info
+      };
     }
   }
 
