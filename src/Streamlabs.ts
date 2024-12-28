@@ -131,6 +131,8 @@ export class StreamlabsManager {
         }
         case "raid": {
           try {
+            console.log(data);
+            
             subathonManager.getRewardFromTwitchEvent({
               user_id: "0",
               user_login: data.message[0].name,

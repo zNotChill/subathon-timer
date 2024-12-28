@@ -122,6 +122,8 @@ export class SubathonManager {
   getMessageEventValue(event: MessageEvent, type: EventType) {
     let eventValue: number = 0;
 
+    // console.log(type, event);
+
     switch (type) {
       case "channel.cheer":
         eventValue = event.bits ?? 0;
@@ -133,7 +135,7 @@ export class SubathonManager {
         eventValue = event.amount ?? 0;
         break;
       case "channel.raid":
-        eventValue = event.viewers ?? 0;
+        eventValue = event.amount ?? 0;
         break;
     }
 
@@ -145,13 +147,17 @@ export class SubathonManager {
 
     const timeEvents = this.sessionHistory.filter(event => event.duration > 0);
 
-    timeEvents.forEach(event => {
+    timeEvents.forEach((event, i) => {
       let mult = 1;
       let timeSincePreviousEvent = Math.abs(event.timestamp - this.sessionHistory[this.sessionHistory.indexOf(event) - 1]?.timestamp) / 1000;
 
       if (timeSincePreviousEvent < 0 || !timeSincePreviousEvent) timeSincePreviousEvent = 0;
 
-      // console.log(`TIME FUNC`, mult, timeSincePreviousEvent, event.duration, event.multiplier, event.base_rate);
+      if (i === timeEvents.length - 1) {
+        timeSincePreviousEvent = (Date.now() - event.timestamp) / 1000;
+      }
+
+      // console.log(`TIME FUNC`, mult, timeSincePreviousEvent, event.duration, event.multiplier, event.base_rate, duration, i);
 
       if (event.type === "time_removed") mult = -1
 
@@ -201,6 +207,8 @@ export class SubathonManager {
       }
     });
 
+    console.log(type, eventValue, event);
+    
     Log(`Used rate: ${usedRate.type} with value ${usedRate.value} and duration ${usedRate.duration}`, "SubathonManager");
     
     let durationValue = usedRate.duration;
@@ -698,6 +706,9 @@ export class SubathonManager {
         globalData.backup_info.base_rate = this.baseRate;
 
         globalData.subathon_config.history = this.sessionHistory;
+
+        this.setTimerFromHistory();
+        this.setDonationsFromHistory();
       }
     }, 1000);
   }
