@@ -161,7 +161,7 @@ export class SubathonManager {
 
       if (event.type === "time_removed") mult = -1
 
-      duration += ((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent;
+      duration += Math.abs(((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent);
     });
 
     this.timer = duration;
