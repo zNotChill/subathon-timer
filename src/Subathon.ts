@@ -5,6 +5,7 @@ import { dataManager, twitchManager } from "./Manager.ts";
 import { MessageEvent } from "./types/EventSub.ts";
 import { HelixUser } from "./types/Helix.ts";
 import { EventType, Rate, Event } from "./types/Subathon.ts";
+import { formatSeconds } from "./utils/Time.ts";
 export class SubathonManager {
   data: Data;
   sessionHistory: Event[];
@@ -145,9 +146,18 @@ export class SubathonManager {
   setTimerFromHistory() {
     let duration = 0;
 
-    const timeEvents = this.sessionHistory.filter(event => event.duration > 0);
+    const timeEvents = this.sessionHistory.filter(event => 
+      event.duration > 0 &&
+      event.type !== "time_added" &&
+      event.type !== "time_removed" &&
+      event.type !== "time_paused" &&
+      event.type !== "time_unpaused"
+    );
 
     timeEvents.forEach((event, i) => {
+      // console.log(`TIME FUNC`, event.type, event.duration, duration, i);
+      
+      // duration += event.duration * event.multiplier * event.base_rate;
       let mult = 1;
       let timeSincePreviousEvent = Math.abs(event.timestamp - this.sessionHistory[this.sessionHistory.indexOf(event) - 1]?.timestamp) / 1000;
 
@@ -157,15 +167,61 @@ export class SubathonManager {
         timeSincePreviousEvent = (Date.now() - event.timestamp) / 1000;
       }
 
-      // console.log(`TIME FUNC`, mult, timeSincePreviousEvent, event.duration, event.multiplier, event.base_rate, duration, i);
-
+      
       if (event.type === "time_removed") mult = -1
-
-      duration += Math.abs(((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent);
+      
+      const add = Math.max(
+        ((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent,
+        (event.duration * event.multiplier * event.base_rate) * mult
+      );
+      
+      duration += add;
+      // console.log(`${event.type} | ${event.duration.toFixed(2)} base duration | ${event.multiplier} multiplier | ${timeSincePreviousEvent.toFixed(2)} seconds since previous event | EVENT TIMESTAMP: ${new Date(event.timestamp).toLocaleString()} | DURATION AT THIS POINT NOW: ${formatSeconds(duration).string}`);
+    
+      // console.log(`${event.type} by ${event.user_name === "" ? "UNKNOWN" : event.user_name} (USER ID ${event.user_id === "" ? "UNKNOWN" : event.user_id})`);
+      // console.log(` - Duration: ${event.duration}`);
+      // console.log(` - Multiplier: ${event.multiplier}`);
+      // console.log(` - Base rate: ${event.base_rate}`);
+      // console.log(` - Time since previous event: ${timeSincePreviousEvent}`);
+      // console.log(` - Add: ${add}`);
+      // console.log(` - Total duration from this event: ${duration}`);
+      // console.log(` - Timestamp: ${new Date(event.timestamp).toLocaleString()}`);
+      
+      
     });
 
-    this.timer = duration;
+    this.timer = Math.max(duration - this.uptime, 0);
   }
+
+  // setTimerFromHistory() {
+  //   let duration = 0;
+
+  //   const timeEvents = this.sessionHistory.filter(event => 
+  //     event.duration > 0
+  //   );
+
+  //   timeEvents.forEach((event, i) => {
+  //     let mult = 1;
+  //     let timeSincePreviousEvent = Math.abs(event.timestamp - this.sessionHistory[this.sessionHistory.indexOf(event) - 1]?.timestamp) / 1000;
+
+  //     if (timeSincePreviousEvent < 0 || !timeSincePreviousEvent) timeSincePreviousEvent = 0;
+
+  //     if (i === timeEvents.length - 1) {
+  //       timeSincePreviousEvent = (Date.now() - event.timestamp) / 1000;
+  //     }
+
+  //     if (event.type === "time_removed") mult = -1
+
+  //     const add = Math.max(
+  //       ((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent,
+  //       (event.duration * event.multiplier * event.base_rate) * mult
+  //     );
+
+  //     duration += add;
+  //   });
+
+  //   this.timer = Math.max(duration - this.uptime, 0);
+  // }
 
   setDonationsFromHistory() {
     let donations = 0;

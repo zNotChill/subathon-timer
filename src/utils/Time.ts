@@ -38,3 +38,24 @@ export function formattedDurationsToSeconds(durations: string[], operation: "add
 
 	return returnSeconds;
 }
+
+export function formatSeconds(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  
+  let string = "";
+  
+  if (hours > 0) {
+    string += `${String(hours).padStart(2, '0')}:`;
+  }
+  
+  string += `${String(minutes).padStart(2, '0')}:${String(Math.floor(remainingSeconds)).padStart(2, '0')}`;
+  
+  return {
+    hours,
+    minutes,
+    seconds: remainingSeconds,
+    string
+  };
+}
