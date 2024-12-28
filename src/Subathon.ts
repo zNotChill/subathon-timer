@@ -147,11 +147,11 @@ export class SubathonManager {
     let duration = 0;
 
     const timeEvents = this.sessionHistory.filter(event => 
-      event.duration > 0
+      event.duration > 0 &&
       // event.type !== "time_added" &&
       // event.type !== "time_removed" &&
-      // event.type !== "time_paused" &&
-      // event.type !== "time_unpaused"
+      event.type !== "time_paused" &&
+      event.type !== "time_unpaused"
     );
 
     timeEvents.forEach((event, i) => {
