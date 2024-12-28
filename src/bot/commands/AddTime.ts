@@ -23,6 +23,7 @@ export const AddTimeCommand: Command = {
     }
     
     let duration: number | string = args[0];
+    const reason: string = args[1];
 
     // its a time format (HH:MM:SS) / (MM:SS)
     if (duration.includes(":")) {
@@ -46,11 +47,11 @@ export const AddTimeCommand: Command = {
     }
     
     if (duration < 0) {
-      subathonManager.removeTimeFromTimer(duration);
+      subathonManager.removeTimeFromTimer(duration, reason);
       channel.send(`@${user}: removed ${Math.abs(duration)} seconds from the timer.`);
       return;
     } else {
-      subathonManager.addTimeToTimer(duration);
+      subathonManager.addTimeToTimer(duration, reason);
       channel.send(`@${user}: added ${duration} seconds to the timer.`);
       return;
     }

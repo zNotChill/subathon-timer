@@ -148,16 +148,11 @@ export class SubathonManager {
 
     const timeEvents = this.sessionHistory.filter(event => 
       event.duration > 0 &&
-      // event.type !== "time_added" &&
-      // event.type !== "time_removed" &&
       event.type !== "time_paused" &&
       event.type !== "time_unpaused"
     );
 
     timeEvents.forEach((event, i) => {
-      // console.log(`TIME FUNC`, event.type, event.duration, duration, i);
-      
-      // duration += event.duration * event.multiplier * event.base_rate;
       let mult = 1;
       let timeSincePreviousEvent = Math.abs(event.timestamp - this.sessionHistory[this.sessionHistory.indexOf(event) - 1]?.timestamp) / 1000;
 
@@ -167,7 +162,6 @@ export class SubathonManager {
         timeSincePreviousEvent = (Date.now() - event.timestamp) / 1000;
       }
 
-      
       if (event.type === "time_removed") mult = -1
       
       const add = Math.max(
@@ -176,57 +170,19 @@ export class SubathonManager {
       );
       
       duration += add;
-      // console.log(`${event.type} | ${event.duration.toFixed(2)} base duration | ${event.multiplier} multiplier | ${timeSincePreviousEvent.toFixed(2)} seconds since previous event | EVENT TIMESTAMP: ${new Date(event.timestamp).toLocaleString()} | DURATION AT THIS POINT NOW: ${formatSeconds(duration).string}`);
-    
-      // console.log(`${event.type} by ${event.user_name === "" ? "UNKNOWN" : event.user_name} (USER ID ${event.user_id === "" ? "UNKNOWN" : event.user_id})`);
-      // console.log(` - Duration: ${event.duration}`);
-      // console.log(` - Multiplier: ${event.multiplier}`);
-      // console.log(` - Base rate: ${event.base_rate}`);
-      // console.log(` - Time since previous event: ${timeSincePreviousEvent}`);
-      // console.log(` - Add: ${add}`);
-      // console.log(` - Total duration from this event: ${duration}`);
-      // console.log(` - Timestamp: ${new Date(event.timestamp).toLocaleString()}`);
-      
-      
     });
-
+    
     this.timer = Math.max(duration - this.uptime, 0);
   }
-
-  // setTimerFromHistory() {
-  //   let duration = 0;
-
-  //   const timeEvents = this.sessionHistory.filter(event => 
-  //     event.duration > 0
-  //   );
-
-  //   timeEvents.forEach((event, i) => {
-  //     let mult = 1;
-  //     let timeSincePreviousEvent = Math.abs(event.timestamp - this.sessionHistory[this.sessionHistory.indexOf(event) - 1]?.timestamp) / 1000;
-
-  //     if (timeSincePreviousEvent < 0 || !timeSincePreviousEvent) timeSincePreviousEvent = 0;
-
-  //     if (i === timeEvents.length - 1) {
-  //       timeSincePreviousEvent = (Date.now() - event.timestamp) / 1000;
-  //     }
-
-  //     if (event.type === "time_removed") mult = -1
-
-  //     const add = Math.max(
-  //       ((event.duration * event.multiplier * event.base_rate) * mult) - timeSincePreviousEvent,
-  //       (event.duration * event.multiplier * event.base_rate) * mult
-  //     );
-
-  //     duration += add;
-  //   });
-
-  //   this.timer = Math.max(duration - this.uptime, 0);
-  // }
 
   setDonationsFromHistory() {
     let donations = 0;
     
-    const donationEvents = this.sessionHistory.filter(event => event.donation > 0);
+    const donationEvents = this.sessionHistory.filter(event => 
+      event.donation > 0 &&
+      event.type !== "money_added" &&
+      event.type !== "money_removed"
+    );
 
     donationEvents.forEach(event => {
       let mult = 1;
@@ -487,7 +443,7 @@ export class SubathonManager {
     this.globalMultiplierCountdown = countdown;
   }
 
-  addTimeToTimer(time: number) {
+  addTimeToTimer(time: number, reason: string = "") {
     this.timer += time;
     this.addEvent({
       type: "time_added",
@@ -499,13 +455,13 @@ export class SubathonManager {
       multiplier: 1,
       base_rate: 1,
       user_id: "",
-      user_name: "",
+      user_name: reason,
       helix_user: {} as HelixUser
     });
     this.setTimerFromHistory();
   }
 
-  removeTimeFromTimer(time: number) {
+  removeTimeFromTimer(time: number, reason: string = "") {
     this.timer -= time;
     this.addEvent({
       type: "time_removed",
@@ -517,7 +473,7 @@ export class SubathonManager {
       multiplier: 1,
       base_rate: 1,
       user_id: "",
-      user_name: "",
+      user_name: reason,
       helix_user: {} as HelixUser
     });
     this.setTimerFromHistory();
