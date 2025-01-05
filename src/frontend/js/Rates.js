@@ -38,13 +38,13 @@ rates.forEach((rate) => {
   let title = "";
   let symbol = "";
 
-  let baseRateValues = {
+  const baseRateValues = {
     money: rate.money_per || 0,
-    time: rate.time_per || rate.duration,
+    time: (rate.time_per || rate.duration) || rate.duration,
   }
-  let currentRateValues = {
+  const currentRateValues = {
     money: rate.money_per || 0,
-    time: rate.time_per * subathonData.multiplier * subathonData.base_rate || rate.duration,
+    time: (rate.time_per || rate.duration) * subathonData.multiplier * subathonData.base_rate || rate.duration,
   }
 
   switch (rate.type) {
@@ -110,6 +110,12 @@ rates.forEach((rate) => {
       break;
   }
 
+  console.log(rate);
+  console.log(baseRateValues);
+  console.log(currentRateValues);
+  console.log(rate.time_per * subathonData.multiplier * subathonData.base_rate);
+  
+
   rateSymbol.appendChild(symbolDiv);
   leftDiv.appendChild(rateSymbol);
   rateContainer.appendChild(leftDiv);
@@ -136,6 +142,16 @@ rates.forEach((rate) => {
   const currentRateTitle = document.createElement("div");
   currentRateTitle.classList.add("current_rate_color", "rate-grid-title");
   currentRateTitle.textContent = `Current Rate (${subathonData.multiplier}x)`;
+
+  if (subathonData.base_rate !== 1 && subathonData.multiplier !== 1) {
+    currentRateTitle.innerHTML = `
+      Current Rate (<span class="base_rate_color_brighter">${subathonData.multiplier * subathonData.base_rate}x</span>)
+    `
+  } else if (subathonData.base_rate !== 1 && subathonData.multiplier === 1) {
+    currentRateTitle.innerHTML = `
+      Current Rate (<span class="base_rate_color_brighter">${subathonData.base_rate}x</span>)
+    `
+  }
 
   const currentRate = document.createElement("div");
   currentRate.classList.add("current_rate");
@@ -178,6 +194,10 @@ function convertSecondsToTimeStr(seconds) {
 }
 
 const time_remaining_element = document.querySelector(".time_remaining");
+const base_rate = document.querySelector(".base_rate");
+
+base_rate.textContent = `Overall base rate: ${subathonData.base_rate}x`;
+
 setInterval(() => {
   if (subathonData.multiplier_countdown <= 0 && subathonData.multiplier > 1) {
     time_remaining_element.textContent = `Multiplier expired`;

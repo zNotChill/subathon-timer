@@ -108,6 +108,8 @@ export class StreamlabsManager {
     })
 
     this.io.on("event", (data: StreamlabsEvent) => {
+      console.log(data);
+      
       switch (data.type) {
         case "donation": {
           try {

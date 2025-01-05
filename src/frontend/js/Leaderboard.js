@@ -43,7 +43,6 @@ if (top_total.length < 10) {
   }
 }
 
-
 const currencySymbol = currencies[currency];
 
 function renderLeaderboard(type) {
@@ -57,6 +56,7 @@ function renderLeaderboard(type) {
         <th>Placement</th>
         <th>Username</th>
         <th>Total Money Donated</th>
+        <th>Total Time Contributed</th>
       </tr>
     `;
   } else if (type === "time") {
@@ -66,6 +66,7 @@ function renderLeaderboard(type) {
         <th>Placement</th>
         <th>Username</th>
         <th>Total Time Contributed</th>
+        <th>Total Money Donated</th>
       </tr>
     `;
   } else if (type === "all") {
@@ -158,6 +159,10 @@ function renderLeaderboard(type) {
     const total = document.createElement("td");
     total.textContent = type === "money" ? currencySymbol + formatNumber(entry[1]) : convertSecondsToTimeStr(entry[1]);
     entryContainer.appendChild(total);
+
+    const other = document.createElement("td");
+    other.textContent = "-";
+    entryContainer.appendChild(other);
 
     tbody.appendChild(entryContainer);
   });

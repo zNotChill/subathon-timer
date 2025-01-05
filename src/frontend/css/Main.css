@@ -1,14 +1,14 @@
 @import url(https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900|manrope:200,300,400,500,600,700,800|montserrat:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i);
 
 :root {
-  --background: #000207;
-  --background-slightly-lighter: #0e1718;
-  --background-lighter: #000a1d;
+  --background: hsl(223, 100%, 1%);
+  --background-2: hsl(223, 100%, 2%);
+  --background-3: hsl(219, 100%, 6%);
 
-  --background-sl-dark: #0a0f0f;
-  --lighter: #2C3C41;
-  --lighter-2: #445d65;
-  --lighter-text: #8b9292;
+  --background-4: hsl(180, 20%, 5%);
+  --lighter: hsl(194, 19%, 21%);
+  --lighter-2: hsl(195, 20%, 33%);
+  --lighter-text: hsl(180, 3%, 56%);
 
   --input: #101619;
 
@@ -114,7 +114,7 @@ body.settings_page .settings-container {
 /* Sidebar */
 
 .sidebar {
-  background-color: #0b1213;
+  background-color: var(--background-4);
   width: var(--sidebar-width);
   height: 100vh;
   position: fixed;
@@ -162,7 +162,7 @@ body.settings_page .settings-container {
 }
 
 .sidebar-option.active {
-  background-color: var(--lighter-2);
+  background-color: var(--lighter);
 }
 .sidebar-option:hover .option_text, .sidebar-option.active .option_text {
   color: white;
@@ -187,7 +187,7 @@ body.settings_page .settings-container {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--background-slightly-lighter);
+  background-color: var(--background-4);
   padding: 0 15px;
   font-size: 0.8em;
   color: var(--lighter-text);
@@ -199,7 +199,7 @@ body.settings_page .settings-container {
 /* Settings */
 
 .settings-container {
-  /* background-color: var(--background-sl-dark); */
+  /* background-color: var(--background-4); */
   width: calc(100% - var(--sidebar-width) - var(--gap) - var(--margin));
   height: 100vh;
   font-family: "Montserrat", sans-serif;
@@ -299,7 +299,7 @@ input, .mock-input {
 icon {
   fill: white;
   position: relative;
-  display: inline-flex;
+  display: inline-flex!important;
   padding: 0;
   margin: 0;
 }
@@ -403,7 +403,7 @@ input:checked + .slider:before {
 }
 
 .modal .modal-content {
-  background-color: var(--background-slightly-lighter);
+  background-color: var(--background-2);
   width: 600px;
   height: 300px;
 }
@@ -489,7 +489,7 @@ th, td {
 }
 
 th {
-  background-color: var(--lighter);
+  background-color: var(--background-4);
   color: var(--lighter-text);
   font-family: "Montserrat", sans-serif;
   font-weight: 700;
@@ -536,7 +536,10 @@ td.center {
     grid-area: unset!important;
   }
   .rate-container .center .grid {
-    grid-template-columns: unset!important;
+    /* grid-template-columns: unset!important; */
+    /* resize grid based on window size */
+    width: calc(100vw - var(--sidebar-width) - 35px - 75px - 20px)!important;
+    
     height: fit-content;
   }
 }
@@ -577,7 +580,7 @@ td.center {
     font-size: 0.8em;
   }
 
-  i.time_remaining {
+  i.time_remaining, i.base_rate {
     font-size: 12px;
   }
 
@@ -607,6 +610,8 @@ td.center {
     padding: 0px;
     height: 36px;
     width: 100vw;
+    position: fixed;
+    z-index: 1000;
   }
 
   .sidebar-top {
@@ -760,4 +765,30 @@ td.center {
 }
 .base_rate_color_brighter {
   color: #6faac4;
+}
+
+/* leaderboard */
+
+.leaderboard {
+  max-width: 1000px;
+}
+
+.leaderboard tr:nth-child(2n+1) {
+  background-color: var(--background-4);
+}
+
+.leaderboard tr th:nth-child(1) {
+  width: 50px;
+}
+
+.leaderboard tr th:nth-child(2) {
+  width: 250px;
+}
+
+.leaderboard tr th:nth-child(3) {
+  width: 250px;
+}
+
+.leaderboard tr th:nth-child(4) {
+  width: 250px;
 }

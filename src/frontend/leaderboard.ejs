@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rates</title>
+  <title>Leaderboard</title>
 </head>
 <script>
 const top_donators = <%- JSON.stringify(top_donators) %>;
@@ -58,7 +58,9 @@ const currency = <%- JSON.stringify(currency) %>;
       </a>
     </div>
   </div>
-  <table class="leaderboard settings-container"></table>
+  <div class="settings-container">
+    <table class="leaderboard"></table>
+  </div>
   <div class="footer">
     <div class="footer-text">
       Made with ❤️ by <a href="https://github.com/zNotChill/subathon-timer" target="_blank">zNotChill</a>. &copy; 2024

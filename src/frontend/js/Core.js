@@ -61,3 +61,14 @@ document.querySelectorAll(".sidebar-option").forEach((option) => {
     }
   });
 });
+
+window.onload = () => {
+  console.log([
+    `Website made by zNotChill (@chxll on discord)`,
+    ``,
+    `If you're interested in the source code, you can find the repository here:`,
+    `> https://github.com/zNotChill/subathon-timer`,
+    ``,
+    `If you have any questions, suggestions, or issues, feel free to either open an issue or contact me on discord.`
+  ].join("\n"));
+}
